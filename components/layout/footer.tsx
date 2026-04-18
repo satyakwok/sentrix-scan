@@ -15,7 +15,7 @@ export function Footer() {
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
             <a href="https://sentrix.sentriscloud.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Website</a>
-            <a href="https://github.com/satyakwok/sentrix" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://github.com/sentrix-labs/sentrix" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://t.me/SentrixCommunity" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram</a>
           </nav>
 
