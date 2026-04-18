@@ -90,7 +90,7 @@ export function fetchBlock(network: NetworkId, index: number) {
 
 export async function fetchLatestBlocks(network: NetworkId, count = 10) {
   const res = await apiFetch<{ blocks: BlockData[] }>(network, `/chain/blocks?limit=${count}`);
-  return res.blocks ?? [];
+  return res?.blocks ?? [];
 }
 
 export function fetchTransaction(network: NetworkId, txId: string) {
@@ -99,6 +99,7 @@ export function fetchTransaction(network: NetworkId, txId: string) {
 
 export async function fetchLatestTransactions(network: NetworkId, count = 10) {
   const res = await apiFetch<{ transactions: TransactionData[] } | TransactionData[]>(network, `/transactions?limit=${count}`);
+  if (!res) return [];
   return Array.isArray(res) ? res : (res.transactions ?? []);
 }
 
@@ -108,6 +109,7 @@ export function fetchAccountBalance(network: NetworkId, address: string) {
 
 export async function fetchAccountHistory(network: NetworkId, address: string, page = 1) {
   const res = await apiFetch<{ transactions: TransactionData[] } | TransactionData[]>(network, `/accounts/${address}/history?page=${page}`);
+  if (!res) return [];
   return Array.isArray(res) ? res : (res.transactions ?? []);
 }
 
