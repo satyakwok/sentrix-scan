@@ -138,7 +138,7 @@ export default function HomePage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
         {statsLoading && !stats ? (
           Array.from({ length: 8 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
@@ -173,27 +173,27 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="space-y-0 p-0">
             {blocksLoading && !blocks ? (
-              <div className="p-4 space-y-3">
-                {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              <div className="p-4 space-y-2">
+                {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" style={{ opacity: 1 - i * 0.08 }} />)}
               </div>
             ) : blocks && blocks.length > 0 ? (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/60">
                 {blocks.slice(0, 10).map((block) => (
-                  <div key={block.index} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
+                  <div key={block.index} className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                        <Blocks className="h-4 w-4 text-blue-500" />
+                      <div className="h-8 w-8 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
+                        <Blocks className="h-3.5 w-3.5 text-blue-500" />
                       </div>
                       <div className="min-w-0">
                         <BlockHeight height={block.index} prefix="#" className="text-sm" />
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground">
                           <Timestamp timestamp={block.timestamp} />
                         </p>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs text-muted-foreground">{block.transactions?.length || 0} txs</p>
-                      <div className="text-xs font-mono">
+                    <div className="text-right shrink-0 min-w-0">
+                      <p className="text-[11px] text-muted-foreground">{block.transactions?.length || 0} txs</p>
+                      <div className="text-[11px] font-mono truncate">
                         {block.validator_name ? (
                           <Address address={block.validator} label={block.validator_name} muted showCopy={false} />
                         ) : (
@@ -205,7 +205,10 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-sm text-muted-foreground">{t("no_blocks")}</div>
+              <div className="p-12 text-center">
+                <Blocks className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">{t("no_blocks")}</p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -223,38 +226,41 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="space-y-0 p-0">
             {txsLoading && !txs ? (
-              <div className="p-4 space-y-3">
-                {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              <div className="p-4 space-y-2">
+                {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" style={{ opacity: 1 - i * 0.08 }} />)}
               </div>
             ) : txs && txs.length > 0 ? (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/60">
                 {txs.map((tx) => {
                   const success = tx.status !== "failed";
                   return (
-                    <div key={tx.id} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
+                    <div key={tx.id} className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${success ? "bg-green-500/10" : "bg-red-500/10"}`}>
-                          <ArrowUpDown className={`h-4 w-4 ${success ? "text-green-500" : "text-red-500"}`} />
+                        <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 ${success ? "bg-green-500/10" : "bg-red-500/10"}`}>
+                          <ArrowUpDown className={`h-3.5 w-3.5 ${success ? "text-green-500" : "text-red-500"}`} />
                         </div>
                         <div className="min-w-0">
                           <TxHash hash={tx.id} />
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[11px] text-muted-foreground">
                             <Timestamp timestamp={tx.timestamp} />
                           </p>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <div className="text-xs font-mono">
+                      <div className="text-right shrink-0 min-w-0">
+                        <div className="text-[11px] font-mono truncate">
                           <Address address={tx.from} muted showCopy={false} />
                         </div>
-                        <p className="text-xs font-semibold">{tx.amount} SRX</p>
+                        <p className="text-xs font-semibold font-mono">{tx.amount} SRX</p>
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="p-8 text-center text-sm text-muted-foreground">{t("no_transactions")}</div>
+              <div className="p-12 text-center">
+                <ArrowUpDown className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">{t("no_transactions")}</p>
+              </div>
             )}
           </CardContent>
         </Card>
