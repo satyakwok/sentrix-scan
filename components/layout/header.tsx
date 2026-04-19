@@ -3,7 +3,7 @@
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useRef, useEffect } from "react";
-import { Search, Sun, Moon, Menu, X, Globe, Check } from "lucide-react";
+import { Search, Sun, Moon, Menu, X, Globe, Check, ChevronDown, Users, Coins, Shield, FileCode, Fish, GitCompare } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNetwork } from "@/lib/network-context";
 import { detectSearchType } from "@/lib/format";
@@ -25,7 +25,9 @@ export function Header() {
   const [query, setQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [lbOpen, setLbOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const lbRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   // DECISION: Cmd+K / Ctrl+K focuses the search input (Etherscan/Linear convention)
@@ -40,10 +42,12 @@ export function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Close language dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+      const t = e.target as Node;
+      if (langRef.current && !langRef.current.contains(t)) setLangOpen(false);
+      if (lbRef.current && !lbRef.current.contains(t)) setLbOpen(false);
     }
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
@@ -68,13 +72,22 @@ export function Header() {
     setLangOpen(false);
   }
 
-  const NAV_LINKS: { href: "/blocks" | "/validators" | "/tokens" | "/leaderboard" | "/"; key: keyof IntlMessages["nav"] }[] = [
+  const NAV_LINKS: { href: "/blocks" | "/validators" | "/tokens" | "/"; key: keyof IntlMessages["nav"] }[] = [
     { href: "/", key: "home" },
     { href: "/blocks", key: "blocks" },
     { href: "/validators", key: "validators" },
     { href: "/tokens", key: "tokens" },
-    { href: "/leaderboard", key: "leaderboard" },
   ];
+
+  const LEADERBOARD_ITEMS = [
+    { href: "/leaderboard/account/holders", label: "Account",   icon: Users,      color: "text-blue-500" },
+    { href: "/leaderboard/token/holders",   label: "Token",     icon: Coins,      color: "text-yellow-500" },
+    { href: "/leaderboard/validator/stake", label: "Validator", icon: Shield,     color: "text-purple-500" },
+    { href: "/leaderboard/contract/calls",  label: "Contract",  icon: FileCode,   color: "text-cyan-500" },
+    { href: "/leaderboard/whale/recent",    label: "Whale",     icon: Fish,       color: "text-green-500" },
+    { href: "/leaderboard/compare",         label: "Compare",   icon: GitCompare, color: "text-pink-500" },
+  ] as const;
+  const leaderboardActive = pathname.startsWith("/leaderboard");
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -107,6 +120,36 @@ export function Header() {
               </Link>
             );
           })}
+          {/* Leaderboard dropdown */}
+          <div className="relative" ref={lbRef}>
+            <button
+              type="button"
+              onClick={() => setLbOpen(!lbOpen)}
+              className={`inline-flex items-center gap-1 px-3 py-2 text-sm transition-colors rounded-md ${
+                leaderboardActive
+                  ? "text-foreground bg-accent/80 font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              }`}
+            >
+              {t("leaderboard")}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${lbOpen ? "rotate-180" : ""}`} />
+            </button>
+            {lbOpen && (
+              <div className="absolute left-0 top-full mt-1 w-56 bg-popover border border-border rounded-lg shadow-lg py-1.5 z-50">
+                {LEADERBOARD_ITEMS.map(({ href, label, icon: Icon, color }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setLbOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent text-foreground"
+                  >
+                    <Icon className={`h-4 w-4 ${color}`} />
+                    <span>{label}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Search */}
@@ -218,6 +261,22 @@ export function Header() {
                 {t(l.key)}
               </Link>
             ))}
+            <div className="pt-2 mt-2 border-t border-border">
+              <p className="px-3 pb-1 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                {t("leaderboard")}
+              </p>
+              {LEADERBOARD_ITEMS.map(({ href, label, icon: Icon, color }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
+                >
+                  <Icon className={`h-4 w-4 ${color}`} />
+                  {label}
+                </Link>
+              ))}
+            </div>
           </nav>
         </div>
       )}

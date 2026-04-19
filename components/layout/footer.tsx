@@ -33,7 +33,7 @@ export function Footer() {
               <Link href="/blocks" className="text-muted-foreground hover:text-foreground transition-colors">Blocks</Link>
               <Link href="/validators" className="text-muted-foreground hover:text-foreground transition-colors">Validators</Link>
               <Link href="/tokens" className="text-muted-foreground hover:text-foreground transition-colors">Tokens</Link>
-              <Link href="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
+              <Link href="/leaderboard/account/holders" className="text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
             </nav>
           </div>
 

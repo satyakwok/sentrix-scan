@@ -1,6 +1,6 @@
 import { redirect } from "@/i18n/navigation";
 
-export default async function LeaderboardIndex({
+export default async function AccountIndex({
   params,
 }: {
   params: Promise<{ locale: string }>;
