@@ -3,6 +3,7 @@
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Link } from "@/i18n/navigation";
 import {
   Blocks, ArrowUpDown, Users, Clock, Search, Activity, Layers, Coins, Gift,
@@ -14,8 +15,14 @@ import { Address } from "@/components/common/Address";
 import { TxHash } from "@/components/common/TxHash";
 import { BlockHeight } from "@/components/common/BlockHeight";
 import { Timestamp } from "@/components/common/Timestamp";
-import { StatsChart } from "@/components/home/StatsChart";
 import { useNetwork } from "@/lib/network-context";
+
+// DECISION: lazy-load StatsChart to keep Home bundle below the 500 kB gzipped target.
+// Chart is below the fold on most viewports — OK to defer.
+const StatsChart = dynamic(() => import("@/components/home/StatsChart").then((m) => m.StatsChart), {
+  ssr: false,
+  loading: () => <Skeleton className="h-72 w-full" />,
+});
 import { useStats, useBlocks, useTransactions } from "@/lib/hooks";
 import { formatNumber, formatSRX } from "@/lib/format";
 import { detectSearchType } from "@/lib/format";
