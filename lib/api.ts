@@ -71,6 +71,14 @@ export interface AccountBalance {
   nonce: number;
 }
 
+interface RawAccountBalance {
+  address: string;
+  balance?: number;
+  balance_srx?: number;
+  balance_sentri?: number;
+  nonce?: number;
+}
+
 export interface TokenData {
   contract_address: string;
   name: string;
@@ -105,8 +113,15 @@ export async function fetchLatestTransactions(network: NetworkId, count = 10) {
   return Array.isArray(res) ? res : (res.transactions ?? []);
 }
 
-export function fetchAccountBalance(network: NetworkId, address: string) {
-  return apiFetch<AccountBalance>(network, `/accounts/${address}/balance`);
+export async function fetchAccountBalance(network: NetworkId, address: string): Promise<AccountBalance | null> {
+  const res = await apiFetch<RawAccountBalance>(network, `/accounts/${address}/balance`);
+  if (!res) return null;
+  // DECISION: backend field is balance_srx (balance in SRX units); normalize to .balance.
+  return {
+    address: res.address,
+    balance: res.balance ?? res.balance_srx ?? 0,
+    nonce: res.nonce ?? 0,
+  };
 }
 
 export async function fetchAccountHistory(network: NetworkId, address: string, page = 1) {

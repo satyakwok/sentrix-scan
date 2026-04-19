@@ -21,9 +21,20 @@ export function shortenAddress(address: string): string {
   return shortenHash(address, 6);
 }
 
+// DECISION: API returns unix seconds (10 digits, e.g. 1776597784). JS Date expects ms.
+// Any numeric timestamp below 1e12 is treated as seconds and scaled up.
+function toMillis(timestamp: string | number): number {
+  if (typeof timestamp === "string") {
+    const n = Number(timestamp);
+    if (Number.isFinite(n)) return n < 1e12 ? n * 1000 : n;
+    return new Date(timestamp).getTime();
+  }
+  return timestamp < 1e12 ? timestamp * 1000 : timestamp;
+}
+
 export function timeAgo(timestamp: string | number): string {
   const now = Date.now();
-  const then = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;
+  const then = toMillis(timestamp);
   const diff = Math.floor((now - then) / 1000);
 
   if (diff < 5) return "just now";
@@ -35,7 +46,7 @@ export function timeAgo(timestamp: string | number): string {
 }
 
 export function formatTimestamp(timestamp: string | number): string {
-  const date = typeof timestamp === "string" ? new Date(timestamp) : new Date(timestamp);
+  const date = new Date(toMillis(timestamp));
   return date.toLocaleString("en-US", {
     year: "numeric",
     month: "short",
