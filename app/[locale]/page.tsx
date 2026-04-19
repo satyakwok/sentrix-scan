@@ -43,9 +43,9 @@ function StatCard({
   iconBg?: string;
 }) {
   return (
-    <Card>
+    <Card className="transition-all hover:border-foreground/20 hover:shadow-sm">
       <CardContent className="flex items-center gap-4 p-4">
-        <div className={`h-10 w-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`h-10 w-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-110`}>
           <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
         <div className="min-w-0">

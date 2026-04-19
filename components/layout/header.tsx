@@ -90,15 +90,22 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
-            >
-              {t(l.key)}
-            </Link>
-          ))}
+          {NAV_LINKS.map((l) => {
+            const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`px-3 py-2 text-sm transition-colors rounded-md ${
+                  active
+                    ? "text-foreground bg-accent/80 font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                }`}
+              >
+                {t(l.key)}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Search */}
