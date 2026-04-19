@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { NetworkId } from "./chain";
+import { FetchStatus } from "./fetch-status";
 import {
   fetchChainInfo, fetchLatestBlocks, fetchLatestTransactions,
   fetchBlock, fetchTransaction, fetchAccountBalance,
@@ -10,40 +11,86 @@ import {
   type ValidatorData, type AccountBalance, type TokenData,
 } from "./api";
 
+interface UsePollingReturn<T> {
+  data: T | null;
+  loading: boolean;
+  error: boolean;
+  status: FetchStatus;
+  lastUpdated: number | null;
+  refetch: () => Promise<void>;
+  retry: () => Promise<void>;
+}
+
+// DECISION: Enhanced usePolling with FetchStatus state machine, request deduplication via in-flight ref,
+// and exponential backoff on consecutive failures (base interval × 2^failures, capped at 60s).
 function usePolling<T>(
   fetcher: () => Promise<T | null>,
   interval: number,
-  deps: unknown[] = []
-) {
+  deps: unknown[] = [],
+): UsePollingReturn<T> {
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [status, setStatus] = useState<FetchStatus>(FetchStatus.Idle);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const inFlight = useRef(false);
+  const failures = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refetch = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setStatus((prev) => (prev === FetchStatus.Fetched ? FetchStatus.Fetched : FetchStatus.Fetching));
     try {
       const result = await fetcher();
       if (result !== null) {
         setData(result);
-        setError(false);
+        setStatus(FetchStatus.Fetched);
+        setLastUpdated(Date.now());
+        failures.current = 0;
+      } else {
+        failures.current += 1;
+        setStatus(FetchStatus.FetchFailed);
       }
     } catch {
-      setError(true);
+      failures.current += 1;
+      setStatus(FetchStatus.FetchFailed);
     } finally {
-      setLoading(false);
+      inFlight.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
+  const retry = useCallback(async () => {
+    failures.current = 0;
+    await refetch();
+  }, [refetch]);
+
   useEffect(() => {
     refetch();
     if (interval > 0) {
-      const id = setInterval(refetch, interval);
-      return () => clearInterval(id);
+      function schedule() {
+        const backoff = Math.min(60_000, interval * Math.pow(2, failures.current));
+        timerRef.current = setTimeout(async () => {
+          await refetch();
+          schedule();
+        }, backoff);
+      }
+      schedule();
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refetch, interval]);
 
-  return { data, loading, error, refetch };
+  return {
+    data,
+    loading: status === FetchStatus.Idle || (status === FetchStatus.Fetching && data === null),
+    error: status === FetchStatus.FetchFailed && data === null,
+    status,
+    lastUpdated,
+    refetch,
+    retry,
+  };
 }
 
 export function useStats(network: NetworkId) {

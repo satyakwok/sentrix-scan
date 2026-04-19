@@ -128,3 +128,28 @@
     @apply font-sans;
   }
 }
+
+/* Address hover highlight — all matching data-address nodes on the page light up together */
+.address-highlight {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  outline: 1px solid color-mix(in oklch, var(--primary) 25%, transparent);
+  border-radius: 4px;
+}
+
+/* Smooth theme transitions */
+html {
+  color-scheme: light dark;
+}
+html.dark {
+  color-scheme: dark;
+}
+html,
+body,
+.bg-card,
+.bg-background,
+.bg-muted,
+.text-foreground,
+.text-muted-foreground,
+.border-border {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
