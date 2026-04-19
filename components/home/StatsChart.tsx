@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Activity } from "lucide-react";
 import type { BlockData } from "@/lib/api";
+import { toMillis } from "@/lib/format";
 
 type Range = "1h" | "6h" | "24h";
 
@@ -19,7 +20,7 @@ function buildSeries(blocks: BlockData[] | null, range: Range): { t: string; tps
   const series: Record<number, number> = {};
 
   blocks.forEach((b) => {
-    const ts = new Date(b.timestamp).getTime();
+    const ts = toMillis(b.timestamp);
     if (now - ts > windowMs) return;
     const bucket = Math.floor((now - ts) / bucketMs);
     const txCount = b.transactions?.length || 0;
@@ -40,13 +41,14 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
   const [range, setRange] = useState<Range>("1h");
   const data = useMemo(() => buildSeries(blocks, range), [blocks, range]);
   const peak = useMemo(() => (data.length ? Math.max(...data.map((d) => d.tps)) : 0), [data]);
+  const hasSignal = data.some((d) => d.tps > 0);
 
   return (
     <Card>
       <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3 flex-wrap">
         <CardTitle className="text-base flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Transactions Per Second
+          <TrendingUp className="h-4 w-4 text-[var(--gold)]" />
+          <span className="font-mono text-[10px] tracking-[.22em] uppercase text-[var(--tx-d)]">Transactions Per Second</span>
           <span className="text-xs text-muted-foreground font-normal ml-2 font-mono">peak {peak.toFixed(2)} tps</span>
         </CardTitle>
         <div className="flex items-center gap-1">
@@ -66,25 +68,33 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="tps-grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="t" fontSize={10} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} interval="preserveStartEnd" />
-              <YAxis fontSize={10} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} width={28} />
-              <Tooltip
-                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                formatter={(value) => [`${Number(value).toFixed(2)} tps`, "TPS"]}
-              />
-              <Area type="monotone" dataKey="tps" stroke="#3B82F6" strokeWidth={2} fill="url(#tps-grad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        {!hasSignal ? (
+          <div className="h-48 flex flex-col items-center justify-center text-center gap-2 border border-dashed border-[var(--brd)] rounded-lg bg-[color-mix(in_oklab,var(--muted)_30%,transparent)]">
+            <Activity className="h-6 w-6 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">No throughput in the last {range}</p>
+            <p className="text-xs text-muted-foreground/70 font-mono">Chart populates after the first transaction in-window.</p>
+          </div>
+        ) : (
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="tps-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="var(--gold)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="t" fontSize={10} stroke="var(--tx-d)" tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis fontSize={10} stroke="var(--tx-d)" tickLine={false} axisLine={false} width={28} />
+                <Tooltip
+                  contentStyle={{ background: "var(--card)", border: "1px solid var(--brd)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value) => [`${Number(value).toFixed(2)} tps`, "TPS"]}
+                />
+                <Area type="monotone" dataKey="tps" stroke="var(--gold)" strokeWidth={2} fill="url(#tps-grad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

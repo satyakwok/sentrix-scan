@@ -14,6 +14,7 @@ import { useNetwork } from "@/lib/network-context";
 import { fetchToken, type TokenData } from "@/lib/api";
 import { useTokenHolders, useTokenTrades } from "@/lib/hooks";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatCard } from "@/components/common/StatCard";
 import { formatNumber } from "@/lib/format";
 
 export default function TokenDetailPage({ params }: { params: Promise<{ addr: string }> }) {
@@ -72,22 +73,10 @@ export default function TokenDetailPage({ params }: { params: Promise<{ addr: st
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Total Supply</p>
-          <p className="text-lg font-semibold font-mono mt-1">{formatNumber(token.total_supply)}</p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Holders</p>
-          <p className="text-lg font-semibold font-mono mt-1">{token.holders !== undefined ? formatNumber(token.holders) : "-"}</p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Transfers</p>
-          <p className="text-lg font-semibold font-mono mt-1">{token.transfers !== undefined ? formatNumber(token.transfers) : "-"}</p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Decimals</p>
-          <p className="text-lg font-semibold font-mono mt-1">{token.decimals}</p>
-        </CardContent></Card>
+        <StatCard label="Total Supply" value={formatNumber(token.total_supply)}                                   accent="var(--gold)" />
+        <StatCard label="Holders"      value={token.holders !== undefined ? formatNumber(token.holders) : "—"}     accent="var(--cyan)" />
+        <StatCard label="Transfers"    value={token.transfers !== undefined ? formatNumber(token.transfers) : "—"} accent="var(--purple)" />
+        <StatCard label="Decimals"     value={String(token.decimals)}                                               accent="var(--teal)" />
       </div>
 
       <Tabs defaultValue="transfers" className="space-y-4">

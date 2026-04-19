@@ -131,16 +131,18 @@ export default function TxDetailPage({ params }: { params: Promise<{ hash: strin
                   value={<Address address={tx.contract_address} truncate={false} />}
                 />
               )}
-              <InfoRow
-                label="Signature"
-                value={
-                  <span className="inline-flex items-center gap-2 font-mono break-all text-xs text-muted-foreground">
-                    {tx.signature}
-                    <Copyable text={tx.signature} bare />
-                  </span>
-                }
-                last
-              />
+              {tx.signature ? (
+                <InfoRow
+                  label="Signature"
+                  value={
+                    <span className="inline-flex items-center gap-2 font-mono break-all text-xs text-muted-foreground">
+                      {tx.signature}
+                      <Copyable text={tx.signature} bare />
+                    </span>
+                  }
+                  last
+                />
+              ) : null}
             </CardContent>
           </Card>
         </TabsContent>

@@ -11,10 +11,11 @@ import { Timestamp } from "@/components/common/Timestamp";
 import { Copyable } from "@/components/common/Copyable";
 import { Pagination } from "@/components/common/Pagination";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatCard } from "@/components/common/StatCard";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useNetwork } from "@/lib/network-context";
 import { useAddress, useAddressHistory } from "@/lib/hooks";
-import { formatSRX } from "@/lib/format";
+import { formatSRX, formatNumber } from "@/lib/format";
 
 type DirFilter = "all" | "in" | "out";
 
@@ -43,31 +44,25 @@ export default function AddressDetailPage({ params }: { params: Promise<{ addr: 
       </div>
 
       {/* Balance card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground mb-1">Balance</p>
-            {accountLoading ? (
-              <Skeleton className="h-6 w-32" />
-            ) : (
-              <p className="text-xl font-semibold font-mono">
-                {account ? formatSRX(account.balance) : "0 SRX"}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground mb-1">Nonce</p>
-            {accountLoading ? (
-              <Skeleton className="h-6 w-16" />
-            ) : (
-              <p className="text-xl font-semibold font-mono">
-                {account ? account.nonce : 0}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <StatCard
+          label="Balance"
+          value={account ? formatSRX(account.balance) : "0 SRX"}
+          loading={accountLoading}
+          accent="var(--gold)"
+        />
+        <StatCard
+          label="Nonce"
+          value={account ? String(account.nonce) : "0"}
+          loading={accountLoading}
+          accent="var(--cyan)"
+        />
+        <StatCard
+          label="Tx Count"
+          value={account?.tx_count !== undefined ? formatNumber(account.tx_count) : "—"}
+          loading={accountLoading}
+          accent="var(--purple)"
+        />
       </div>
 
       {/* Tabs */}
@@ -107,12 +102,11 @@ export default function AddressDetailPage({ params }: { params: Promise<{ addr: 
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border text-left text-xs text-muted-foreground bg-muted/30">
-                          <th className="px-4 py-2.5 font-medium"></th>
+                          <th className="px-3 py-2.5 font-medium w-7"></th>
                           <th className="px-4 py-2.5 font-medium">Tx Hash</th>
-                          <th className="px-4 py-2.5 font-medium">Age</th>
-                          <th className="px-4 py-2.5 font-medium">From</th>
-                          <th className="px-4 py-2.5 font-medium">To</th>
-                          <th className="px-4 py-2.5 font-medium">Status</th>
+                          <th className="px-4 py-2.5 font-medium hidden md:table-cell">Age</th>
+                          <th className="px-4 py-2.5 font-medium">Peer</th>
+                          <th className="px-4 py-2.5 font-medium hidden lg:table-cell">Status</th>
                           <th className="px-4 py-2.5 font-medium text-right">Amount</th>
                         </tr>
                       </thead>
@@ -122,36 +116,27 @@ export default function AddressDetailPage({ params }: { params: Promise<{ addr: 
                           const isSelf = isIn && tx.from.toLowerCase() === addr.toLowerCase();
                           const dirIcon = isSelf ? <ArrowLeftRight className="h-3.5 w-3.5 text-muted-foreground" /> : isIn ? <ArrowDown className="h-3.5 w-3.5 text-green-500" /> : <ArrowUp className="h-3.5 w-3.5 text-red-500" />;
                           const success = tx.status !== "failed";
+                          // "Peer" = the counterparty. If we sent, show `to`. If we received, show `from`.
+                          const peerAddr = isSelf ? tx.from : isIn ? tx.from : tx.to;
                           return (
                             <tr key={tx.id}>
                               <td className="px-3 py-2.5">{dirIcon}</td>
                               <td className="px-4 py-2.5"><TxHash hash={tx.id} /></td>
-                              <td className="px-4 py-2.5 text-muted-foreground text-xs">
+                              <td className="px-4 py-2.5 text-muted-foreground text-xs hidden md:table-cell">
                                 <Timestamp timestamp={tx.timestamp} />
                               </td>
                               <td className="px-4 py-2.5">
-                                {tx.from.toLowerCase() === addr.toLowerCase() ? (
-                                  <span className="font-mono text-xs text-muted-foreground" data-address={tx.from} title={tx.from}>
-                                    {tx.from.slice(0, 8)}...{tx.from.slice(-6)}
-                                  </span>
+                                {peerAddr === "COINBASE" || peerAddr.toUpperCase() === "COINBASE" ? (
+                                  <span className="text-xs font-mono text-[var(--tx-d)]">COINBASE</span>
                                 ) : (
-                                  <Address address={tx.from} showCopy={false} className="text-xs" />
+                                  <Address address={peerAddr} showCopy={false} className="text-xs" />
                                 )}
                               </td>
-                              <td className="px-4 py-2.5">
-                                {tx.to.toLowerCase() === addr.toLowerCase() ? (
-                                  <span className="font-mono text-xs text-muted-foreground" data-address={tx.to} title={tx.to}>
-                                    {tx.to.slice(0, 8)}...{tx.to.slice(-6)}
-                                  </span>
-                                ) : (
-                                  <Address address={tx.to} showCopy={false} className="text-xs" />
-                                )}
-                              </td>
-                              <td className="px-4 py-2.5">
+                              <td className="px-4 py-2.5 hidden lg:table-cell">
                                 <StatusBadge status={success ? "success" : "failed"} />
                               </td>
                               <td className="px-4 py-2.5 text-right">
-                                <span className={isSelf ? "" : isIn ? "text-green-500 font-mono" : "text-red-500 font-mono"}>
+                                <span className={isSelf ? "font-mono text-muted-foreground" : isIn ? "text-green-500 font-mono" : "text-red-500 font-mono"}>
                                   {isSelf ? "" : isIn ? "+" : "-"}{tx.amount} SRX
                                 </span>
                               </td>
