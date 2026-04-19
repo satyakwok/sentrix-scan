@@ -180,8 +180,9 @@
     "error_id": "Error ID: {id}"
   },
   "not_found_page": {
-    "title": "404 — Not Found",
-    "description": "The page you requested could not be found. It may have been moved or does not exist.",
+    "eyebrow": "Not Found",
+    "title": "This chain has no such block.",
+    "description": "The page you requested could not be found. It may have been moved, or the address / hash you typed is incomplete.",
     "browse_blocks": "Browse blocks"
   },
   "footer": {

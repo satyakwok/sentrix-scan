@@ -71,7 +71,7 @@ export function TokenRanking({ sort }: { sort: Sort }) {
                         <td className="px-4 py-2.5 text-muted-foreground">{rank}</td>
                         <td className="px-4 py-2.5">
                           <Link href={`/tokens/${t.contract_address}`} className="inline-flex items-center gap-2">
-                            <span className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                            <span className="h-7 w-7 rounded-full bg-gradient-to-br from-[var(--gold)] to-[var(--gold-d)] flex items-center justify-center text-white text-xs font-semibold shrink-0">
                               {t.symbol.slice(0, 2).toUpperCase()}
                             </span>
                             <span className="flex flex-col min-w-0">

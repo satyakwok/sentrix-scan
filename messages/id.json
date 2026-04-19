@@ -180,8 +180,9 @@
     "error_id": "ID Error: {id}"
   },
   "not_found_page": {
-    "title": "404 — Tidak Ditemukan",
-    "description": "Halaman yang Anda minta tidak ditemukan. Mungkin telah dipindah atau tidak ada.",
+    "eyebrow": "Tidak Ditemukan",
+    "title": "Chain ini tidak mengenal blok tersebut.",
+    "description": "Halaman yang Anda minta tidak ditemukan. Mungkin dipindahkan, atau alamat / hash yang diketik belum lengkap.",
     "browse_blocks": "Lihat blok"
   },
   "footer": {

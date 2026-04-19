@@ -56,7 +56,7 @@ export default function TokenDetailPage({ params }: { params: Promise<{ addr: st
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold shrink-0">
+        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--gold)] to-[var(--gold-d)] flex items-center justify-center text-white font-semibold shrink-0">
           {token.symbol.slice(0, 2).toUpperCase()}
         </div>
         <div>
