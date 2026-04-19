@@ -84,7 +84,7 @@ function CompareInner() {
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
               <input
                 type="text"
-                placeholder={`First ${TYPE_LABELS[type].toLowerCase()} address (0x...)`}
+                placeholder={`First ${TYPE_LABELS[type].toLowerCase()} (0x...)`}
                 value={a}
                 onChange={(e) => setA(e.target.value)}
                 className="w-full h-9 px-3 text-sm bg-muted/40 border border-border rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
@@ -94,7 +94,7 @@ function CompareInner() {
               </button>
               <input
                 type="text"
-                placeholder={`Second ${TYPE_LABELS[type].toLowerCase()} address (0x...)`}
+                placeholder={`Second ${TYPE_LABELS[type].toLowerCase()} (0x...)`}
                 value={b}
                 onChange={(e) => setB(e.target.value)}
                 className="w-full h-9 px-3 text-sm bg-muted/40 border border-border rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"

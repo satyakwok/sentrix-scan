@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Address } from "@/components/common/Address";
 import { Pagination } from "@/components/common/Pagination";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatCard } from "@/components/common/StatCard";
 import { useNetwork } from "@/lib/network-context";
 import { useValidators } from "@/lib/hooks";
 import { formatNumber } from "@/lib/format";
@@ -104,30 +105,10 @@ export default function ValidatorsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">{t("total_staked")}</p>
-            <p className="text-lg font-semibold font-mono mt-1">{formatNumber(summary.totalStake)} SRX</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">{t("active")}</p>
-            <p className="text-lg font-semibold text-green-500 mt-1">{summary.active}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">{t("inactive")}</p>
-            <p className="text-lg font-semibold text-red-500 mt-1">{summary.inactive}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">{t("jailed")}</p>
-            <p className="text-lg font-semibold text-orange-500 mt-1">{summary.jailed}</p>
-          </CardContent>
-        </Card>
+        <StatCard label={t("total_staked")} value={`${formatNumber(summary.totalStake)} SRX`} accent="var(--gold)" />
+        <StatCard label={t("active")}       value={String(summary.active)}                   accent="var(--green)" />
+        <StatCard label={t("inactive")}     value={String(summary.inactive)}                 accent="var(--red)" />
+        <StatCard label={t("jailed")}       value={String(summary.jailed)}                   accent="var(--orange)" />
       </div>
 
       <Card>

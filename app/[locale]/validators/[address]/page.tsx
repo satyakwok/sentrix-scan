@@ -13,6 +13,7 @@ import { Timestamp } from "@/components/common/Timestamp";
 import { InfoRow } from "@/components/common/InfoRow";
 import { Pagination } from "@/components/common/Pagination";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatCard } from "@/components/common/StatCard";
 import { useNetwork } from "@/lib/network-context";
 import { useValidators, useBlocks } from "@/lib/hooks";
 import { formatNumber } from "@/lib/format";
@@ -103,24 +104,31 @@ export default function ValidatorDetailPage({ params }: { params: Promise<{ addr
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Stake</p>
-          <p className="text-lg font-semibold font-mono mt-1">{validator.stake !== undefined ? `${formatNumber(validator.stake)} SRX` : "-"}</p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Commission</p>
-          <p className="text-lg font-semibold font-mono mt-1">{validator.commission !== undefined ? `${validator.commission}%` : "-"}</p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Uptime</p>
-          <p className={`text-lg font-semibold font-mono mt-1 ${validator.uptime === undefined ? "" : validator.uptime >= 99 ? "text-green-500" : validator.uptime >= 95 ? "text-yellow-500" : "text-red-500"}`}>
-            {validator.uptime !== undefined ? `${validator.uptime.toFixed(1)}%` : "-"}
-          </p>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Blocks Produced</p>
-          <p className="text-lg font-semibold font-mono mt-1">{validator.blocks_produced !== undefined ? formatNumber(validator.blocks_produced) : "-"}</p>
-        </CardContent></Card>
+        <StatCard
+          label="Stake"
+          value={validator.stake !== undefined ? `${formatNumber(validator.stake)} SRX` : "—"}
+          accent="var(--gold)"
+        />
+        <StatCard
+          label="Commission"
+          value={validator.commission !== undefined ? `${validator.commission}%` : "—"}
+          accent="var(--cyan)"
+        />
+        <StatCard
+          label="Uptime"
+          value={validator.uptime !== undefined ? `${validator.uptime.toFixed(1)}%` : "—"}
+          accent={
+            validator.uptime === undefined ? "var(--tx-d)" :
+            validator.uptime >= 99 ? "var(--green)" :
+            validator.uptime >= 95 ? "var(--orange)" :
+            "var(--red)"
+          }
+        />
+        <StatCard
+          label="Blocks Produced"
+          value={validator.blocks_produced !== undefined ? formatNumber(validator.blocks_produced) : "—"}
+          accent="var(--purple)"
+        />
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
