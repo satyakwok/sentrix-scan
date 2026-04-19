@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Users, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

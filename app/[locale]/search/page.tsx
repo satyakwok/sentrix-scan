@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { detectSearchType } from "@/lib/format";

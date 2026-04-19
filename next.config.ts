@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -15,11 +18,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-// DECISION: Sentry wrapper only activates when SENTRY_AUTH_TOKEN is present (CI/prod), so local
-// dev builds don't pay source-map upload overhead. Matches user request that Sentry be a no-op
-// when env not set.
+const withIntl = withNextIntl(nextConfig);
+
 export default process.env.SENTRY_AUTH_TOKEN
-  ? withSentryConfig(nextConfig, {
+  ? withSentryConfig(withIntl, {
       silent: true,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -28,4 +30,4 @@ export default process.env.SENTRY_AUTH_TOKEN
       sourcemaps: { disable: false },
       disableLogger: true,
     })
-  : nextConfig;
+  : withIntl;
