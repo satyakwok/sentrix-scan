@@ -65,6 +65,11 @@ function usePolling<T>(
   }, [refetch]);
 
   useEffect(() => {
+    // DECISION: when deps (e.g. network) change, clear stale data so the UI shows skeletons
+    // instead of last-network values while the new fetch is in flight.
+    setData(null);
+    setStatus(FetchStatus.Fetching);
+    failures.current = 0;
     refetch();
     if (interval > 0) {
       function schedule() {
