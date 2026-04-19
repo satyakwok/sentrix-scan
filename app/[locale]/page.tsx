@@ -49,11 +49,11 @@ function computeBlockTime(timestamps: Array<string | number>): string {
 // TODO(api): add total_transactions to /chain/info — replace the estimate once shipped.
 function estimateTotalTransactions(
   totalBlocks: number | undefined,
-  blocks: { transactions?: unknown[] }[] | null,
+  blocks: { transactions?: unknown[]; tx_count?: number }[] | null,
 ): string {
   if (!totalBlocks) return "—";
   if (!blocks || blocks.length === 0) return formatNumber(totalBlocks);
-  const txs = blocks.reduce((n, b) => n + (b.transactions?.length ?? 0), 0);
+  const txs = blocks.reduce((n, b) => n + (b.tx_count ?? b.transactions?.length ?? 0), 0);
   const avg = txs / blocks.length;
   if (avg <= 0) return "—";
   return `${formatNumber(Math.round(totalBlocks * avg))} est.`;
@@ -181,7 +181,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0 min-w-0">
-                      <p className="text-[11px] text-muted-foreground">{block.transactions?.length || 0} txs</p>
+                      <p className="text-[11px] text-muted-foreground">{block.tx_count ?? block.transactions?.length ?? 0} txs</p>
                       <div className="text-[11px] font-mono truncate">
                         {block.validator_name ? (
                           <Address address={block.validator} label={block.validator_name} muted showCopy={false} />

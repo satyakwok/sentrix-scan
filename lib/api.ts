@@ -37,6 +37,8 @@ export interface BlockData {
   validator: string;
   validator_name?: string;
   transactions: TransactionData[];
+  /** Only populated by the LIST endpoint (/chain/blocks); detail endpoint returns transactions[]. */
+  tx_count?: number;
   merkle_root: string;
   nonce: number;
   difficulty: number;

@@ -195,7 +195,7 @@ export default function ValidatorDetailPage({ params }: { params: Promise<{ addr
                           <tr key={b.index}>
                             <td className="px-4 py-2.5"><BlockHeight height={b.index} /></td>
                             <td className="px-4 py-2.5 text-muted-foreground text-xs"><Timestamp timestamp={b.timestamp} /></td>
-                            <td className="px-4 py-2.5 text-right">{b.transactions?.length || 0}</td>
+                            <td className="px-4 py-2.5 text-right">{b.tx_count ?? b.transactions?.length ?? 0}</td>
                           </tr>
                         ))}
                       </tbody>

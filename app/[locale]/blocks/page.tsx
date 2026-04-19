@@ -85,7 +85,7 @@ export default function BlocksPage() {
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">
                           <Timestamp timestamp={block.timestamp} />
                         </td>
-                        <td className="px-4 py-2.5 text-center">{block.transactions?.length || 0}</td>
+                        <td className="px-4 py-2.5 text-center">{block.tx_count ?? block.transactions?.length ?? 0}</td>
                         <td className="px-4 py-2.5 hidden md:table-cell">
                           <span className="inline-flex items-center gap-1">
                             <span className="font-mono text-xs text-muted-foreground">{shortenHash(block.hash)}</span>

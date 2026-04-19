@@ -23,7 +23,9 @@ function buildSeries(blocks: BlockData[] | null, range: Range): { t: string; tps
     const ts = toMillis(b.timestamp);
     if (now - ts > windowMs) return;
     const bucket = Math.floor((now - ts) / bucketMs);
-    const txCount = b.transactions?.length || 0;
+    // DECISION: list endpoint only sends tx_count (not the transactions array); prefer it
+    // when present. Includes coinbase tx per block — matches Solscan's "TPS" convention.
+    const txCount = b.tx_count ?? b.transactions?.length ?? 0;
     series[bucket] = (series[bucket] || 0) + txCount;
   });
 
