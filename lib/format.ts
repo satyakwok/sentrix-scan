@@ -6,11 +6,13 @@ export function formatNumber(n: number): string {
 }
 
 export function formatSRX(amount: number): string {
+  if (!isFinite(amount)) return "— SRX";
+  if (amount === 0) return "0 SRX";
   if (amount >= 1_000_000_000) return (amount / 1_000_000_000).toFixed(2) + "B SRX";
   if (amount >= 1_000_000) return (amount / 1_000_000).toFixed(2) + "M SRX";
   if (amount >= 1_000) return (amount / 1_000).toFixed(2) + "K SRX";
   // DECISION: keep 2 decimals for sub-1K amounts so stat cards don't overflow ("600.0119 SRX"
-  // wrapped on the 2×5 grid). Sub-1 amounts keep 4 decimals — small-coin precision matters.
+  // wrapped on the 2×5 grid). Sub-1 non-zero amounts keep 4 decimals — small-coin precision matters.
   if (amount >= 1) return amount.toFixed(2) + " SRX";
   return amount.toFixed(4) + " SRX";
 }

@@ -136,7 +136,7 @@ export default function HomePage() {
             <StatCard label={t("stats.active_validators")} value={stats ? String(stats.active_validators) : "—"} loading={statsLoading} accent="var(--purple)" />
             <StatCard label={t("stats.mempool")} value={stats ? `${stats.mempool_size} tx` : "—"} loading={statsLoading} accent="var(--orange)" />
             <StatCard label={t("stats.total_minted")} value={stats ? formatSRX(stats.total_minted_srx) : "—"} loading={statsLoading} accent="var(--green)" />
-            <StatCard label={t("stats.total_burned")} value={stats ? `${stats.total_burned_srx.toFixed(4)} SRX` : "—"} loading={statsLoading} accent="var(--red)" />
+            <StatCard label={t("stats.total_burned")} value={stats ? formatSRX(stats.total_burned_srx) : "—"} loading={statsLoading} accent="var(--red)" />
             <StatCard label={t("stats.tokens_deployed")} value={stats ? String(stats.deployed_tokens) : "—"} loading={statsLoading} accent="var(--teal)" />
             <StatCard label={t("stats.block_reward")} value={stats ? `${stats.next_block_reward_srx} SRX` : "—"} loading={statsLoading} accent="var(--pink)" />
             <StatCard label={t("stats.chain_id")} value={network === "mainnet" ? "7119" : "7120"} loading={false} accent="var(--lime)" />
