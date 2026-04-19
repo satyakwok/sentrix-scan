@@ -43,7 +43,7 @@ export function DetailCardSkeleton({ rows = 6 }: { rows?: number }) {
   );
 }
 
-export function TableSkeleton({ rows = 8, cols = 5 }: { rows?: number; cols?: number }) {
+export function TableSkeleton({ rows = 8 }: { rows?: number }) {
   return (
     <div className="p-4 space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
