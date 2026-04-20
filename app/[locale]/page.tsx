@@ -88,7 +88,20 @@ export default function HomePage() {
   const totalTxValue = stats?.total_transactions != null
     ? formatNumber(stats.total_transactions)
     : estimateTotalTransactions(stats?.total_blocks, blocks);
-  const liveTps = latestPerf ? `${latestPerf.tps.toFixed(2)} tps` : "—";
+
+  // Idle detection: if the newest polled block is older than 2 minutes, the chain is paused
+  // and TPS is genuinely zero — distinguish "idle chain" from "active but 0 tx" so the card
+  // reads as "0 — because nothing is happening" rather than "— no data".
+  const latestBlockAgeSec = blocks && blocks.length > 0
+    ? Math.floor((Date.now() - Math.max(...blocks.map((b) => toMillis(b.timestamp)))) / 1000)
+    : null;
+  const isChainIdle = latestBlockAgeSec !== null && latestBlockAgeSec > 120;
+  const liveTps = isChainIdle
+    ? "Idle"
+    : latestPerf
+      ? `${latestPerf.tps.toFixed(2)} tps`
+      : "—";
+  const tpsAccent = isChainIdle ? "var(--orange)" : "var(--gold)";
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -105,6 +118,19 @@ export default function HomePage() {
   return (
     <>
       <LiveTicker stats={stats} blockTime={blockTime} network={network} epoch={epoch} status={chainStatus} />
+      {isChainIdle && latestBlockAgeSec !== null && (
+        <div className="border-b border-[var(--orange)]/30 bg-[color-mix(in_oklab,var(--orange)_8%,transparent)]">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6 py-2 flex items-center gap-3 text-[11px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--orange)] animate-pulse-live" />
+            <span className="font-mono uppercase tracking-[.15em] text-[var(--orange)]">
+              {network === "testnet" ? "Testnet" : "Chain"} paused
+            </span>
+            <span className="font-mono text-[var(--tx-m)]">
+              Last block {latestBlockAgeSec < 3600 ? `${Math.round(latestBlockAgeSec / 60)} minutes` : `${(latestBlockAgeSec / 3600).toFixed(1)} hours`} ago — validator may be offline.
+            </span>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-16 space-y-12 animate-fade-in">
       {/* Editorial hero */}
       <div className="text-center space-y-6 max-w-3xl mx-auto">
@@ -150,9 +176,21 @@ export default function HomePage() {
         ) : (
           <>
             {/* Row 1 — live performance */}
-            <StatCard label={t("stats.tps")} value={liveTps} loading={!blocks} accent="var(--gold)" />
+            <StatCard
+              label={t("stats.tps")}
+              value={liveTps}
+              loading={!blocks}
+              accent={tpsAccent}
+              title={isChainIdle && latestBlockAgeSec !== null ? `Chain paused — last block ${latestBlockAgeSec < 3600 ? `${Math.round(latestBlockAgeSec / 60)}m` : `${(latestBlockAgeSec / 3600).toFixed(1)}h`} ago` : undefined}
+            />
             <StatCard label={t("stats.block_height")} value={stats ? stats.height.toLocaleString() : "—"} loading={statsLoading} accent="var(--cyan)" />
-            <StatCard label={t("stats.block_time")} value={blockTime} loading={!blocks} accent="var(--teal)" />
+            <StatCard
+              label={t("stats.block_time")}
+              value={isChainIdle ? "—" : blockTime}
+              loading={!blocks}
+              accent={isChainIdle ? "var(--orange)" : "var(--teal)"}
+              title={isChainIdle ? "Chain paused — block time stale" : undefined}
+            />
             <StatCard label={t("stats.total_transactions")} value={totalTxValue} loading={statsLoading && !blocks} accent="var(--blue)" />
             {/* Row 2 — chain state */}
             <StatCard label={t("stats.active_validators")} value={stats ? String(stats.active_validators) : "—"} loading={statsLoading} accent="var(--purple)" />
