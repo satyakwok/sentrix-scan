@@ -107,10 +107,15 @@ function usePolling<T>(
   };
 }
 
+// DECISION: backend rate-limit = 60 req/min per IP. Home alone fires ~10 polling hooks,
+// plus LabelProvider bootstrap (3) + address registry refresh. At 5s intervals that's
+// ~120 req/min — exceeds the bucket and the server returns 429 WITHOUT CORS headers,
+// which the browser reports as "CORS blocked". Slower + staggered intervals keep every
+// surface under the cap. Real-time feel preserved via optimistic render + live ticker.
 export function useStats(network: NetworkId) {
   return usePolling<ChainInfo>(
     () => fetchChainInfo(network),
-    5000,
+    10000,
     [network]
   );
 }
@@ -118,7 +123,7 @@ export function useStats(network: NetworkId) {
 export function useBlocks(network: NetworkId, count = 10) {
   return usePolling<BlockData[]>(
     () => fetchLatestBlocks(network, count),
-    5000,
+    10000,
     [network, count]
   );
 }
@@ -134,7 +139,7 @@ export function useBlock(network: NetworkId, height: number) {
 export function useTransactions(network: NetworkId, count = 10) {
   return usePolling<TransactionData[]>(
     () => fetchLatestTransactions(network, count),
-    5000,
+    10000,
     [network, count]
   );
 }
@@ -198,7 +203,7 @@ export function useTokenHolders(network: NetworkId, contract: string, limit = 50
 export function useChainPerformance(network: NetworkId, range: "1m" | "5m" | "15m" | "1h" | "24h" = "1h") {
   return usePolling<ChainPerformance>(
     () => fetchChainPerformance(network, range),
-    5000,
+    15000,
     [network, range],
   );
 }
@@ -238,7 +243,7 @@ export function useValidatorDelegators(network: NetworkId, address: string) {
 export function useMempool(network: NetworkId) {
   return usePolling<MempoolSnapshot>(
     () => fetchMempool(network),
-    5000,
+    10000,
     [network],
   );
 }
@@ -254,7 +259,7 @@ export function useCurrentEpoch(network: NetworkId) {
 export function useChainStatus(network: NetworkId) {
   return usePolling<ChainStatus>(
     () => fetchChainStatus(network),
-    10000,
+    30000,
     [network],
   );
 }
