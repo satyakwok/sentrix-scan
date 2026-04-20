@@ -197,13 +197,42 @@ export async function fetchTransaction(network: NetworkId, txId: string): Promis
   return normalizeTx(res);
 }
 
+// DECISION: /transactions returns raw chain rows — txid/from/to/amount in sentri,
+// block_timestamp, is_coinbase flag — not the TransactionData shape the UI expects.
+// Normalize here so Home / Latest Transactions doesn't render "Invalid Date" etc.
+interface RawListedTx {
+  txid: string;
+  from: string;
+  to: string;
+  amount: number;
+  fee: number;
+  block_index: number;
+  block_timestamp: number;
+  timestamp?: number;
+  is_coinbase?: boolean;
+  status?: string;
+}
+
 export async function fetchLatestTransactions(network: NetworkId, count = 10) {
-  const res = await apiFetch<{ transactions: TransactionData[] } | TransactionData[]>(
+  const res = await apiFetch<{ transactions: RawListedTx[] } | RawListedTx[]>(
     network,
     `/transactions?limit=${count}`,
   );
   if (!res) return [];
-  return Array.isArray(res) ? res : (res.transactions ?? []);
+  const rows = Array.isArray(res) ? res : (res.transactions ?? []);
+  return rows.map((t): TransactionData => ({
+    id: t.txid,
+    from: t.from,
+    to: t.to,
+    amount: toSrx(t.amount ?? 0),
+    fee: toSrx(t.fee ?? 0),
+    timestamp: String(t.timestamp ?? t.block_timestamp ?? 0),
+    nonce: 0,
+    signature: "",
+    block_height: t.block_index,
+    status: (t.status as TransactionData["status"]) ?? "confirmed",
+    tx_type: t.is_coinbase ? "coinbase" : undefined,
+  }));
 }
 
 // DECISION: use /address/{addr}/info which returns balance_srx, nonce, and a windowed tx_count.
