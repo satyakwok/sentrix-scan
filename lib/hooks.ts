@@ -8,9 +8,11 @@ import {
   fetchBlock, fetchTransaction, fetchAccountBalance,
   fetchAccountHistory, fetchValidators, fetchTokens,
   fetchRichlist, fetchTokenHolders, fetchTokenTrades,
+  fetchChainPerformance,
   type ChainInfo, type BlockData, type TransactionData,
   type ValidatorData, type AccountBalance, type TokenData,
   type TopHolder, type TokenHolder, type TokenTransfer,
+  type ChainPerformance,
 } from "./api";
 
 interface UsePollingReturn<T> {
@@ -184,6 +186,14 @@ export function useTokenHolders(network: NetworkId, contract: string, limit = 50
     () => fetchTokenHolders(network, contract, limit),
     30000,
     [network, contract, limit],
+  );
+}
+
+export function useChainPerformance(network: NetworkId, range: "1m" | "5m" | "15m" | "1h" | "24h" = "1h") {
+  return usePolling<ChainPerformance>(
+    () => fetchChainPerformance(network, range),
+    5000,
+    [network, range],
   );
 }
 

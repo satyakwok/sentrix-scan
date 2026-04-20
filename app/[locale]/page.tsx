@@ -23,9 +23,10 @@ const StatsChart = dynamic(() => import("@/components/home/StatsChart").then((m)
   ssr: false,
   loading: () => <Skeleton className="h-72 w-full" />,
 });
-import { useStats, useBlocks, useTransactions } from "@/lib/hooks";
+import { useStats, useBlocks, useTransactions, useChainPerformance } from "@/lib/hooks";
 import { formatNumber, formatSRX, toMillis } from "@/lib/format";
 import { detectSearchType } from "@/lib/format";
+import type { ChainPerformance } from "@/lib/api";
 
 // DECISION: StatCard moved to components/common/StatCard.tsx so detail pages share it.
 
@@ -66,35 +67,25 @@ export default function HomePage() {
   const { network } = useNetwork();
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [perfRange, setPerfRange] = useState<"1m" | "5m" | "15m" | "1h" | "24h">("1h");
   const { data: stats, loading: statsLoading } = useStats(network);
   // DECISION: TPS chart + Latest Blocks both consume this window. 500 is enough to fill the
   // 1m/5m/15m buckets at 0.5s block time; Latest Blocks only shows the top 10 of the list.
   const { data: blocks, loading: blocksLoading } = useBlocks(network, 500);
   const { data: txs, loading: txsLoading } = useTransactions(network, 10);
+  // DECISION: backend /chain/performance now feeds both the Live TPS card and the StatsChart.
+  // Replaces the previous client-bucketed estimate — real tps/block_time from the validator.
+  const { data: performance, loading: perfLoading } = useChainPerformance(network, perfRange);
 
-  const blockTime = blocks ? computeBlockTime(blocks.map((b) => b.timestamp as unknown as number | string)) : CHAIN_TARGET_BLOCK_TIME;
+  // Prefer backend block_time_sec; fall back to deriving from polled block timestamps.
+  const latestPerf = performance?.points?.[performance.points.length - 1];
+  const blockTime = latestPerf?.block_time_sec
+    ? `${latestPerf.block_time_sec.toFixed(1)}s`
+    : (blocks ? computeBlockTime(blocks.map((b) => b.timestamp as unknown as number | string)) : CHAIN_TARGET_BLOCK_TIME);
   const totalTxValue = stats?.total_transactions != null
     ? formatNumber(stats.total_transactions)
     : estimateTotalTransactions(stats?.total_blocks, blocks);
-
-  // Live TPS derived from the last ~30 seconds of polled blocks. Kept separate from the
-  // StatsChart because the chart is lazy-loaded and we want the headline number above the fold.
-  const liveTps = (() => {
-    if (!blocks || blocks.length === 0) return "—";
-    const now = Date.now();
-    const WINDOW_MS = 30_000;
-    let txs = 0;
-    let oldest = now;
-    for (const b of blocks) {
-      const ts = toMillis(b.timestamp);
-      if (now - ts > WINDOW_MS) continue;
-      txs += b.tx_count ?? b.transactions?.length ?? 0;
-      if (ts < oldest) oldest = ts;
-    }
-    const spanSec = Math.max(1, (now - oldest) / 1000);
-    const tps = txs / spanSec;
-    return `${tps.toFixed(2)} tps`;
-  })();
+  const liveTps = latestPerf ? `${latestPerf.tps.toFixed(2)} tps` : "—";
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -169,8 +160,13 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* TPS chart */}
-      <StatsChart blocks={blocks} />
+      {/* TPS chart — fed by backend /chain/performance */}
+      <StatsChart
+        performance={performance}
+        range={perfRange}
+        onRangeChange={setPerfRange}
+        loading={perfLoading}
+      />
 
       {/* Latest blocks + transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

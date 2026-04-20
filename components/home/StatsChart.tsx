@@ -1,124 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Activity } from "lucide-react";
-import type { BlockData } from "@/lib/api";
-import { toMillis } from "@/lib/format";
+import type { ChainPerformance } from "@/lib/api";
 
-type Range = "1m" | "5m" | "15m" | "1h";
+type Range = "1m" | "5m" | "15m" | "1h" | "24h";
 
-const RANGE_MS: Record<Range, number> = {
-  "1m":  60_000,
-  "5m":  5 * 60_000,
-  "15m": 15 * 60_000,
-  "1h":  60 * 60_000,
-};
+// DECISION: chart + TPS readouts consume the backend /chain/performance endpoint directly —
+// no more client-side bucketing. Backend returns time-series `points[]` with tps,
+// block_time_sec, block_count, tx_count per interval. We just render it.
+export function StatsChart({ performance, range, onRangeChange, loading }: {
+  performance: ChainPerformance | null;
+  range: Range;
+  onRangeChange: (r: Range) => void;
+  loading?: boolean;
+}) {
+  const points = performance?.points ?? [];
 
-const BUCKET_COUNT = 30;
+  const data = useMemo(() => points.map((p) => ({
+    t: formatBucketLabel(p.timestamp),
+    tps: p.tps,
+  })), [points]);
 
-// DECISION: no /chain/performance endpoint. We derive TPS from the block window the explorer
-// already polls. Each block carries `tx_count` (coinbase = 1, plus any user tx). Bucket the
-// span into BUCKET_COUNT slices of equal duration over the selected window and emit
-// `tx_in_bucket / bucket_seconds` as the TPS point.
-// TODO(api): needs GET /chain/performance?range=1m|5m|15m|1h — this is a fallback.
-function buildSeries(blocks: BlockData[] | null, range: Range): { t: string; tps: number }[] {
-  const windowMs = RANGE_MS[range];
-  const bucketMs = windowMs / BUCKET_COUNT;
-  const bucketSec = bucketMs / 1000;
-  const now = Date.now();
-  const series = new Array<number>(BUCKET_COUNT).fill(0);
+  const peak = performance?.peak_tps ?? 0;
+  const avg = performance?.avg_tps ?? 0;
+  const current = points.length ? points[points.length - 1].tps : 0;
+  const hasSignal = points.some((p) => p.tps > 0);
 
-  if (blocks) {
-    for (const b of blocks) {
-      const ts = toMillis(b.timestamp);
-      const ageMs = now - ts;
-      if (ageMs < 0 || ageMs > windowMs) continue;
-      const bucket = Math.min(BUCKET_COUNT - 1, Math.floor(ageMs / bucketMs));
-      const txCount = b.tx_count ?? b.transactions?.length ?? 0;
-      series[bucket] += txCount;
-    }
-  }
-
-  // Label each bucket by its center time — "5m ago", "now", etc.
-  const out: { t: string; tps: number }[] = [];
-  for (let i = BUCKET_COUNT - 1; i >= 0; i--) {
-    const centerAgoMs = (i + 0.5) * bucketMs;
-    const label = formatAgo(centerAgoMs);
-    out.push({ t: label, tps: series[i] / bucketSec });
-  }
-  return out;
-}
-
-function formatAgo(ms: number): string {
-  const s = ms / 1000;
-  if (s < 60) return s < 2 ? "now" : `${Math.round(s)}s`;
-  const m = s / 60;
-  if (m < 60) return `${Math.round(m)}m`;
-  const h = m / 60;
-  return `${h.toFixed(1)}h`;
-}
-
-function formatAge(seconds: number): string {
-  if (seconds < 60) return `${Math.max(1, Math.round(seconds))}s ago`;
-  const m = seconds / 60;
-  if (m < 60) return `${Math.round(m)}m ago`;
-  const h = m / 60;
-  if (h < 24) return `${h.toFixed(1)}h ago`;
-  return `${Math.round(h / 24)}d ago`;
-}
-
-export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
-  // DECISION: the backend /chain/blocks caps at 100 rows and block time is variable (1-21s),
-  // so a fixed default would sometimes render an empty chart ("tps hilang"). Auto-pick the
-  // narrowest range that actually contains the polled blocks; the user can still override.
-  const [range, setRange] = useState<Range>("5m");
-  const userPickedRef = useRef(false);
-
-  useEffect(() => {
-    if (userPickedRef.current || !blocks || blocks.length === 0) return;
-    // Pick the narrowest range that covers the OLDEST polled block. Backend caps
-    // /chain/blocks at 100 rows, so "cover the full window" keeps the chart dense instead of
-    // collapsing to a sparse 1m slice with 7 blocks in it.
-    const now = Date.now();
-    const oldest = blocks.reduce((m, b) => Math.min(m, toMillis(b.timestamp)), Number.POSITIVE_INFINITY);
-    const newest = blocks.reduce((m, b) => Math.max(m, toMillis(b.timestamp)), 0);
-    const oldestAgeMs = now - oldest;
-    const newestAgeMs = now - newest;
-    const candidates: Range[] = ["1m", "5m", "15m", "1h"];
-    // If chain is idle and newest block itself is older than 1h, stick with 1h and let the
-    // "Chain appears idle" state surface the gap.
-    const covering = candidates.find((r) => oldestAgeMs < RANGE_MS[r]);
-    const fallback = candidates.find((r) => newestAgeMs < RANGE_MS[r]);
-    setRange(covering ?? fallback ?? "1h");
-  }, [blocks]);
-
-  function selectRange(r: Range) {
-    userPickedRef.current = true;
-    setRange(r);
-  }
-
-  const data = useMemo(() => buildSeries(blocks, range), [blocks, range]);
-  const peak = useMemo(() => (data.length ? Math.max(...data.map((d) => d.tps)) : 0), [data]);
-  const avg = useMemo(() => {
-    if (!data.length) return 0;
-    const sum = data.reduce((s, d) => s + d.tps, 0);
-    return sum / data.length;
-  }, [data]);
-  const current = data.length ? data[data.length - 1].tps : 0;
-  const hasSignal = data.some((d) => d.tps > 0);
-
-  // Idle detection: when the most recent block is older than the selected window, the chain
-  // either paused or we fetched stale state. Tell the user that directly instead of a
-  // generic "no throughput".
-  const lastBlockAgeSec = useMemo(() => {
-    if (!blocks || blocks.length === 0) return null;
-    const newest = blocks.reduce((m, b) => Math.max(m, toMillis(b.timestamp)), 0);
-    return Math.floor((Date.now() - newest) / 1000);
-  }, [blocks]);
-  const isIdle = lastBlockAgeSec !== null && lastBlockAgeSec * 1000 > RANGE_MS[range];
+  // Idle signal: if the newest bucket is older than the selected window, the chain paused.
+  const lastBucketAge = useMemo(() => {
+    if (points.length === 0) return null;
+    const newest = points.reduce((m, p) => Math.max(m, p.timestamp), 0);
+    return Math.floor(Date.now() / 1000 - newest);
+  }, [points]);
 
   return (
     <Card>
@@ -135,10 +52,10 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
           </span>
         </CardTitle>
         <div className="flex items-center gap-1">
-          {(["1m", "5m", "15m", "1h"] as const).map((r) => (
+          {(["1m", "5m", "15m", "1h", "24h"] as const).map((r) => (
             <button
               key={r}
-              onClick={() => selectRange(r)}
+              onClick={() => onRangeChange(r)}
               className={`text-[10px] px-2.5 py-1 rounded-md border transition-colors uppercase tracking-[.1em] ${
                 range === r
                   ? "bg-primary/10 text-primary border-primary/30"
@@ -151,25 +68,25 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        {blocks === null ? (
+        {loading && !performance ? (
           <div className="h-48 flex items-center justify-center">
             <Skeleton className="h-40 w-full rounded-lg" />
           </div>
         ) : !hasSignal ? (
           <div className="h-48 flex flex-col items-center justify-center text-center gap-2 border border-dashed border-[var(--brd)] rounded-lg bg-[color-mix(in_oklab,var(--muted)_30%,transparent)]">
             <Activity className="h-6 w-6 text-muted-foreground/40" />
-            {isIdle && lastBlockAgeSec !== null ? (
+            {lastBucketAge !== null && lastBucketAge > 120 ? (
               <>
                 <p className="text-sm text-[var(--orange)] font-medium">Chain appears idle</p>
                 <p className="text-xs text-muted-foreground font-mono">
-                  Last block {formatAge(lastBlockAgeSec)} · longer than the selected {range} window
+                  Last activity {formatAge(lastBucketAge)}
                 </p>
               </>
             ) : (
               <>
                 <p className="text-sm text-muted-foreground">No throughput in the last {range}</p>
                 <p className="text-xs text-muted-foreground/70 font-mono">
-                  Chart populates once the polled block window falls inside the selected range.
+                  Backend reported 0 tx across all buckets in this window.
                 </p>
               </>
             )}
@@ -207,4 +124,20 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
       </CardContent>
     </Card>
   );
+}
+
+function formatBucketLabel(unixSec: number): string {
+  const d = new Date(unixSec * 1000);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function formatAge(seconds: number): string {
+  if (seconds < 60) return `${seconds}s ago`;
+  const m = seconds / 60;
+  if (m < 60) return `${Math.round(m)}m ago`;
+  const h = m / 60;
+  if (h < 24) return `${h.toFixed(1)}h ago`;
+  return `${Math.round(h / 24)}d ago`;
 }

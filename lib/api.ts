@@ -364,3 +364,28 @@ export async function fetchDailyStats(network: NetworkId): Promise<DailyStat[]> 
   const res = await apiFetch<DailyStat[]>(network, "/stats/daily");
   return res ?? [];
 }
+
+// ── /chain/performance — live TPS + block time series from backend ──────────
+export interface PerformancePoint {
+  timestamp: number;
+  tps: number;
+  block_time_sec: number;
+  block_count: number;
+  tx_count: number;
+}
+
+export interface ChainPerformance {
+  range: string;
+  total_blocks: number;
+  total_tx: number;
+  avg_tps: number;
+  peak_tps: number;
+  points: PerformancePoint[];
+}
+
+export async function fetchChainPerformance(
+  network: NetworkId,
+  range: "1m" | "5m" | "15m" | "1h" | "24h" = "1h",
+): Promise<ChainPerformance | null> {
+  return apiFetch<ChainPerformance>(network, `/chain/performance?range=${range}`);
+}
