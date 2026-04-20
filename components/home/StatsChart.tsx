@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Activity } from "lucide-react";
 import type { BlockData } from "@/lib/api";
 import { toMillis } from "@/lib/format";
@@ -78,12 +79,20 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
 
   useEffect(() => {
     if (userPickedRef.current || !blocks || blocks.length === 0) return;
+    // Pick the narrowest range that covers the OLDEST polled block. Backend caps
+    // /chain/blocks at 100 rows, so "cover the full window" keeps the chart dense instead of
+    // collapsing to a sparse 1m slice with 7 blocks in it.
     const now = Date.now();
+    const oldest = blocks.reduce((m, b) => Math.min(m, toMillis(b.timestamp)), Number.POSITIVE_INFINITY);
     const newest = blocks.reduce((m, b) => Math.max(m, toMillis(b.timestamp)), 0);
-    const ageMs = now - newest;
+    const oldestAgeMs = now - oldest;
+    const newestAgeMs = now - newest;
     const candidates: Range[] = ["1m", "5m", "15m", "1h"];
-    const pick = candidates.find((r) => ageMs < RANGE_MS[r]) ?? "1h";
-    setRange(pick);
+    // If chain is idle and newest block itself is older than 1h, stick with 1h and let the
+    // "Chain appears idle" state surface the gap.
+    const covering = candidates.find((r) => oldestAgeMs < RANGE_MS[r]);
+    const fallback = candidates.find((r) => newestAgeMs < RANGE_MS[r]);
+    setRange(covering ?? fallback ?? "1h");
   }, [blocks]);
 
   function selectRange(r: Range) {
@@ -142,7 +151,11 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        {!hasSignal ? (
+        {blocks === null ? (
+          <div className="h-48 flex items-center justify-center">
+            <Skeleton className="h-40 w-full rounded-lg" />
+          </div>
+        ) : !hasSignal ? (
           <div className="h-48 flex flex-col items-center justify-center text-center gap-2 border border-dashed border-[var(--brd)] rounded-lg bg-[color-mix(in_oklab,var(--muted)_30%,transparent)]">
             <Activity className="h-6 w-6 text-muted-foreground/40" />
             {isIdle && lastBlockAgeSec !== null ? (
