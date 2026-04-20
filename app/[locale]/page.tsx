@@ -46,6 +46,21 @@ function computeBlockTime(timestamps: Array<string | number>): string {
   return s < 10 ? `${s.toFixed(1)}s` : `${Math.round(s)}s`;
 }
 
+// DECISION: Total Burned needs 3 modes so it reads right at every scale:
+//   0           → "0.0000 SRX"  (precision signal — user wanted 4 zeros shown on mainnet)
+//   0 < x < 1   → "0.0123 SRX"  (small-coin precision)
+//   1 ≤ x < 1k  → "600.04 SRX"  (2 decimals fits card)
+//   ≥ 1000      → "1.20K SRX"   (prevents overflow on testnet's 1200 SRX burned)
+// Full precision still available via the StatCard tooltip (title attr).
+function formatBurnedSrx(amount: number): string {
+  if (!isFinite(amount)) return "— SRX";
+  if (amount === 0) return "0.0000 SRX";
+  if (amount < 1) return `${amount.toFixed(4)} SRX`;
+  if (amount < 1000) return `${amount.toFixed(2)} SRX`;
+  if (amount < 1_000_000) return `${(amount / 1000).toFixed(2)}K SRX`;
+  return `${(amount / 1_000_000).toFixed(2)}M SRX`;
+}
+
 // DECISION: backend /chain/info has no total_transactions — estimate as total_blocks ×
 // avg_tx_per_block from the polled window. User wanted no "est." suffix since the derived
 // number *is* the best available truth until the backend ships /chain/stats.
@@ -195,7 +210,13 @@ export default function HomePage() {
             {/* Row 2 — chain state */}
             <StatCard label={t("stats.active_validators")} value={stats ? String(stats.active_validators) : "—"} loading={statsLoading} accent="var(--purple)" />
             <StatCard label={t("stats.tokens_deployed")} value={stats ? String(stats.deployed_tokens) : "—"} loading={statsLoading} accent="var(--lime)" />
-            <StatCard label={t("stats.total_burned")} value={stats ? `${stats.total_burned_srx.toFixed(4)} SRX` : "—"} loading={statsLoading} accent="var(--red)" />
+            <StatCard
+              label={t("stats.total_burned")}
+              value={stats ? formatBurnedSrx(stats.total_burned_srx) : "—"}
+              title={stats ? `${stats.total_burned_srx.toLocaleString(undefined, { maximumFractionDigits: 8 })} SRX` : undefined}
+              loading={statsLoading}
+              accent="var(--red)"
+            />
             <StatCard label={t("stats.block_reward")} value={stats ? `${stats.next_block_reward_srx} SRX` : "—"} loading={statsLoading} accent="var(--pink)" />
           </>
         )}
