@@ -27,7 +27,7 @@ export function StatCard({ label, value, loading = false, accent = "var(--gold)"
   const { num, unit } = splitValue(value);
 
   return (
-    <div className="card-lift group relative overflow-hidden bg-[color-mix(in_oklab,var(--card)_60%,transparent)] hover:bg-[var(--card)] border border-[var(--brd)] rounded-2xl px-4 py-5 md:px-5 md:py-6 min-w-0">
+    <div className="card-lift group relative overflow-hidden bg-[color-mix(in_oklab,var(--card)_60%,transparent)] hover:bg-[var(--card)] border border-[var(--brd)] rounded-2xl px-5 py-6 md:px-6 md:py-7 min-w-0">
       {/* Animated corner lines */}
       <span
         className="absolute top-0 left-0 h-px w-0 group-hover:w-[60px] transition-all duration-500 opacity-0 group-hover:opacity-70"
@@ -38,9 +38,14 @@ export function StatCard({ label, value, loading = false, accent = "var(--gold)"
         style={{ background: `linear-gradient(to bottom, ${accent}, transparent)` }}
       />
 
+      {/* Eyebrow label ABOVE the number — landing-style editorial hierarchy */}
+      <div className="font-mono text-[10px] text-[var(--tx-d)] tracking-[.22em] uppercase group-hover:text-[var(--tx-m)] transition-colors truncate mb-3">
+        {label}
+      </div>
+
       <div
-        className="font-serif font-light tracking-tight leading-none mb-2 truncate"
-        style={{ fontSize: "clamp(22px, 3.2vw, 38px)" }}
+        className="font-serif font-light tracking-tight leading-none truncate"
+        style={{ fontSize: "clamp(26px, 3.8vw, 46px)" }}
         title={title ?? value}
       >
         {loading ? (
@@ -58,9 +63,6 @@ export function StatCard({ label, value, loading = false, accent = "var(--gold)"
             )}
           </>
         )}
-      </div>
-      <div className="font-mono text-[10px] text-[var(--tx-d)] tracking-[.22em] uppercase group-hover:text-[var(--tx-m)] transition-colors truncate">
-        {label}
       </div>
     </div>
   );

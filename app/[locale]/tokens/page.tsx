@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Copyable } from "@/components/common/Copyable";
 import { Pagination } from "@/components/common/Pagination";
 import { PageHeader } from "@/components/common/PageHeader";
+import { EmptyState } from "@/components/common/EmptyState";
 import { useNetwork } from "@/lib/network-context";
 import { useTokens } from "@/lib/hooks";
 import { formatNumber, shortenAddress } from "@/lib/format";
@@ -135,9 +136,12 @@ export default function TokensPage() {
               )}
             </>
           ) : (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              {t("no_tokens")}
-            </div>
+            <EmptyState
+              icon={Coins}
+              tone="notice"
+              title={t("empty_title")}
+              hint={t("empty_hint")}
+            />
           )}
         </CardContent>
       </Card>

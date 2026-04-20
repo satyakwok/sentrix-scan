@@ -2,16 +2,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function StatCardSkeleton() {
+  // Matches StatCard layout: eyebrow label on top, big serif number below.
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-4">
-        <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
-        <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-5 w-24" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="rounded-2xl border border-[var(--brd)] bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-5 py-6 md:px-6 md:py-7">
+      <Skeleton className="h-3 w-24 mb-3" />
+      <Skeleton className="h-10 w-32" />
+    </div>
   );
 }
 

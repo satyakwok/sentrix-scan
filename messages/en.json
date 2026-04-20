@@ -152,7 +152,9 @@
     "supply": "Supply",
     "holders": "Holders",
     "transfers": "Transfers",
-    "no_tokens": "No SRC-20 tokens deployed yet."
+    "no_tokens": "No SRC-20 tokens deployed yet.",
+    "empty_title": "No SRC-20 tokens deployed yet",
+    "empty_hint": "Deployed tokens will appear here with live supply, holder counts, and recent transfers. Ship yours with the Sentrix SDK."
   },
   "token_detail": {
     "transfers": "Transfers",

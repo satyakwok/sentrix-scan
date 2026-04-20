@@ -86,16 +86,39 @@ export default function BlockDetailPage({ params }: { params: Promise<{ height: 
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="space-y-4">
+          {/* Header — the human-readable facts */}
           <Card>
-            <CardHeader><CardTitle className="text-base">Block Overview</CardTitle></CardHeader>
+            <CardHeader className="pb-2">
+              <CardTitle className="eyebrow">Header</CardTitle>
+            </CardHeader>
             <CardContent className="px-6 py-0">
               <InfoRow label="Block Height" value={<BlockHeight height={block.index} link={false} />} />
-              <InfoRow
-                label="Timestamp"
-                value={<Timestamp timestamp={block.timestamp} absolute />}
-              />
+              <InfoRow label="Timestamp" value={<Timestamp timestamp={block.timestamp} absolute />} />
               <InfoRow label="Transactions" value={String(txCount)} />
+              <InfoRow
+                label="Validator"
+                value={
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Address address={block.validator} truncate={false} />
+                    {block.validator_name && (
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
+                        {block.validator_name}
+                      </span>
+                    )}
+                  </div>
+                }
+                last
+              />
+            </CardContent>
+          </Card>
+
+          {/* Hashes — long hex values, grouped separately so the eye doesn't drown */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="eyebrow">Hashes</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 py-0">
               <InfoRow
                 label="Block Hash"
                 value={
@@ -119,21 +142,6 @@ export default function BlockDetailPage({ params }: { params: Promise<{ height: 
                 }
               />
               <InfoRow
-                label="Validator"
-                value={
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Address address={block.validator} truncate={false} />
-                    {block.validator_name && (
-                      <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
-                        {block.validator_name}
-                      </span>
-                    )}
-                  </div>
-                }
-              />
-              <InfoRow label="Nonce" value={<span className="font-mono">{block.nonce}</span>} />
-              <InfoRow label="Difficulty" value={<span className="font-mono">{block.difficulty}</span>} />
-              <InfoRow
                 label="Merkle Root"
                 value={
                   <span className="inline-flex items-center gap-2 font-mono break-all">
@@ -144,6 +152,17 @@ export default function BlockDetailPage({ params }: { params: Promise<{ height: 
                 hint="Hash of all transaction hashes in this block"
                 last
               />
+            </CardContent>
+          </Card>
+
+          {/* Consensus — nonce + difficulty, the PoW signals */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="eyebrow">Consensus</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 py-0">
+              <InfoRow label="Nonce" value={<span className="font-mono">{block.nonce}</span>} />
+              <InfoRow label="Difficulty" value={<span className="font-mono">{block.difficulty}</span>} last />
             </CardContent>
           </Card>
         </TabsContent>

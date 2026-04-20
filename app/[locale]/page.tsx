@@ -129,22 +129,17 @@ export default function HomePage() {
         </form>
       </div>
 
-      {/* Stats grid — 2×5 */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 lg:gap-4">
+      {/* Stats — 4 editorial hero cards. The granular real-time metrics live in the LiveTicker
+          above; these four carry more visual weight and avoid ticker/grid redundancy. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
         {statsLoading && !stats ? (
-          Array.from({ length: 10 }).map((_, i) => <StatCardSkeleton key={i} />)
+          Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard label={t("stats.block_height")} value={stats ? stats.height.toLocaleString() : "—"} loading={statsLoading} accent="var(--cyan)" />
             <StatCard label={t("stats.total_transactions")} value={totalTxValue} loading={statsLoading && !blocks} accent="var(--blue)" />
-            <StatCard label={t("stats.block_time")} value={blockTime} loading={false} accent="var(--gold)" />
-            <StatCard label={t("stats.active_validators")} value={stats ? String(stats.active_validators) : "—"} loading={statsLoading} accent="var(--purple)" />
-            <StatCard label={t("stats.mempool")} value={stats ? `${stats.mempool_size} tx` : "—"} loading={statsLoading} accent="var(--orange)" />
             <StatCard label={t("stats.total_minted")} value={stats ? formatSRX(stats.total_minted_srx) : "—"} loading={statsLoading} accent="var(--green)" />
             <StatCard label={t("stats.total_burned")} value={stats ? `${stats.total_burned_srx.toFixed(4)} SRX` : "—"} loading={statsLoading} accent="var(--red)" />
-            <StatCard label={t("stats.tokens_deployed")} value={stats ? String(stats.deployed_tokens) : "—"} loading={statsLoading} accent="var(--teal)" />
-            <StatCard label={t("stats.block_reward")} value={stats ? `${stats.next_block_reward_srx} SRX` : "—"} loading={statsLoading} accent="var(--pink)" />
-            <StatCard label={t("stats.chain_id")} value={network === "mainnet" ? "7119" : "7120"} loading={false} accent="var(--lime)" />
+            <StatCard label={t("stats.active_validators")} value={stats ? String(stats.active_validators) : "—"} loading={statsLoading} accent="var(--purple)" />
           </>
         )}
       </div>

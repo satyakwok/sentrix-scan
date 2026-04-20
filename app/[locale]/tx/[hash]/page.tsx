@@ -2,8 +2,8 @@
 
 import { use } from "react";
 import { Link } from "@/i18n/navigation";
-import { ArrowUpDown, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowUpDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Address } from "@/components/common/Address";
@@ -64,8 +64,10 @@ export default function TxDetailPage({ params }: { params: Promise<{ hash: strin
           <TabsTrigger value="raw">Raw JSON</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="space-y-4">
+          {/* Summary — identity + placement */}
           <Card>
+            <CardHeader className="pb-2"><CardTitle className="eyebrow">Summary</CardTitle></CardHeader>
             <CardContent className="px-6 py-0">
               <InfoRow
                 label="Transaction Hash"
@@ -78,59 +80,20 @@ export default function TxDetailPage({ params }: { params: Promise<{ hash: strin
               />
               <InfoRow label="Status" value={<StatusBadge status={success ? "success" : "failed"} />} />
               {tx.block_height !== undefined && (
-                <InfoRow
-                  label="Block"
-                  value={<BlockHeight height={tx.block_height} prefix="#" />}
-                />
+                <InfoRow label="Block" value={<BlockHeight height={tx.block_height} prefix="#" />} />
               )}
-              <InfoRow label="Timestamp" value={<Timestamp timestamp={tx.timestamp} absolute />} />
-              <InfoRow
-                label="From"
-                value={<Address address={tx.from} truncate={false} />}
-              />
-              <InfoRow
-                label="To"
-                value={
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Address address={tx.from} muted showCopy={false} className="text-xs" />
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <Address address={tx.to} truncate={false} />
-                  </div>
-                }
-              />
-              <InfoRow
-                label="Value"
-                value={<span className="font-mono font-semibold">{tx.amount} SRX</span>}
-              />
-              <InfoRow
-                label="Transaction Fee"
-                value={<span className="font-mono">{tx.fee} SRX</span>}
-              />
-              {tx.gas_used !== undefined && (
-                <InfoRow label="Gas Used" value={<span className="font-mono">{tx.gas_used.toLocaleString()}</span>} />
-              )}
-              {tx.gas_price !== undefined && (
-                <InfoRow label="Gas Price" value={<span className="font-mono">{tx.gas_price}</span>} />
-              )}
-              {tx.nonce !== undefined && (
-                <InfoRow label="Nonce" value={<span className="font-mono">{tx.nonce}</span>} />
-              )}
-              {tx.tx_type && (
-                <InfoRow
-                  label="Type"
-                  value={
-                    <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
-                      {tx.tx_type}
-                    </span>
-                  }
-                />
-              )}
-              {tx.contract_address && (
-                <InfoRow
-                  label="Contract"
-                  value={<Address address={tx.contract_address} truncate={false} />}
-                />
-              )}
+              <InfoRow label="Timestamp" value={<Timestamp timestamp={tx.timestamp} absolute />} last />
+            </CardContent>
+          </Card>
+
+          {/* Transfer — the money flow */}
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="eyebrow">Transfer</CardTitle></CardHeader>
+            <CardContent className="px-6 py-0">
+              <InfoRow label="From" value={<Address address={tx.from} truncate={false} />} />
+              <InfoRow label="To" value={<Address address={tx.to} truncate={false} />} />
+              <InfoRow label="Value" value={<span className="font-mono font-semibold">{tx.amount} SRX</span>} />
+              <InfoRow label="Fee" value={<span className="font-mono">{tx.fee} SRX</span>} last={!tx.signature} />
               {tx.signature ? (
                 <InfoRow
                   label="Signature"
@@ -145,6 +108,37 @@ export default function TxDetailPage({ params }: { params: Promise<{ hash: strin
               ) : null}
             </CardContent>
           </Card>
+
+          {/* Execution — render only when EVM-ish metadata is present */}
+          {(tx.gas_used !== undefined || tx.gas_price !== undefined || tx.nonce !== undefined || tx.tx_type || tx.contract_address) && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="eyebrow">Execution</CardTitle></CardHeader>
+              <CardContent className="px-6 py-0">
+                {tx.tx_type && (
+                  <InfoRow
+                    label="Type"
+                    value={
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
+                        {tx.tx_type}
+                      </span>
+                    }
+                  />
+                )}
+                {tx.nonce !== undefined && (
+                  <InfoRow label="Nonce" value={<span className="font-mono">{tx.nonce}</span>} />
+                )}
+                {tx.gas_used !== undefined && (
+                  <InfoRow label="Gas Used" value={<span className="font-mono">{tx.gas_used.toLocaleString()}</span>} />
+                )}
+                {tx.gas_price !== undefined && (
+                  <InfoRow label="Gas Price" value={<span className="font-mono">{tx.gas_price}</span>} />
+                )}
+                {tx.contract_address && (
+                  <InfoRow label="Contract" value={<Address address={tx.contract_address} truncate={false} />} last />
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="input">

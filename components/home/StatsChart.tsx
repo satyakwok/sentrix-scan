@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Activity } from "lucide-react";
 import type { BlockData } from "@/lib/api";
@@ -70,7 +70,27 @@ function formatAge(seconds: number): string {
 }
 
 export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
+  // DECISION: the backend /chain/blocks caps at 100 rows and block time is variable (1-21s),
+  // so a fixed default would sometimes render an empty chart ("tps hilang"). Auto-pick the
+  // narrowest range that actually contains the polled blocks; the user can still override.
   const [range, setRange] = useState<Range>("5m");
+  const userPickedRef = useRef(false);
+
+  useEffect(() => {
+    if (userPickedRef.current || !blocks || blocks.length === 0) return;
+    const now = Date.now();
+    const newest = blocks.reduce((m, b) => Math.max(m, toMillis(b.timestamp)), 0);
+    const ageMs = now - newest;
+    const candidates: Range[] = ["1m", "5m", "15m", "1h"];
+    const pick = candidates.find((r) => ageMs < RANGE_MS[r]) ?? "1h";
+    setRange(pick);
+  }, [blocks]);
+
+  function selectRange(r: Range) {
+    userPickedRef.current = true;
+    setRange(r);
+  }
+
   const data = useMemo(() => buildSeries(blocks, range), [blocks, range]);
   const peak = useMemo(() => (data.length ? Math.max(...data.map((d) => d.tps)) : 0), [data]);
   const avg = useMemo(() => {
@@ -78,6 +98,7 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
     const sum = data.reduce((s, d) => s + d.tps, 0);
     return sum / data.length;
   }, [data]);
+  const current = data.length ? data[data.length - 1].tps : 0;
   const hasSignal = data.some((d) => d.tps > 0);
 
   // Idle detection: when the most recent block is older than the selected window, the chain
@@ -99,7 +120,8 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
             Transactions Per Second
           </span>
           <span className="hidden sm:inline text-[11px] text-muted-foreground font-mono">
-            peak <span className="text-[var(--gold)]">{peak.toFixed(2)}</span> · avg{" "}
+            now <span className="text-[var(--gold)]">{current.toFixed(2)}</span> · peak{" "}
+            <span className="text-[var(--tx-m)]">{peak.toFixed(2)}</span> · avg{" "}
             <span className="text-[var(--tx-m)]">{avg.toFixed(2)}</span>
           </span>
         </CardTitle>
@@ -107,7 +129,7 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
           {(["1m", "5m", "15m", "1h"] as const).map((r) => (
             <button
               key={r}
-              onClick={() => setRange(r)}
+              onClick={() => selectRange(r)}
               className={`text-[10px] px-2.5 py-1 rounded-md border transition-colors uppercase tracking-[.1em] ${
                 range === r
                   ? "bg-primary/10 text-primary border-primary/30"
@@ -149,13 +171,22 @@ export function StatsChart({ blocks }: { blocks: BlockData[] | null }) {
                     <stop offset="95%" stopColor="var(--gold)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
+                <CartesianGrid vertical={false} stroke="var(--brd)" strokeDasharray="2 4" />
                 <XAxis dataKey="t" fontSize={10} stroke="var(--tx-d)" tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis fontSize={10} stroke="var(--tx-d)" tickLine={false} axisLine={false} width={28} />
+                <YAxis
+                  fontSize={10}
+                  stroke="var(--tx-d)"
+                  tickLine={false}
+                  axisLine={false}
+                  width={32}
+                  allowDecimals={peak < 2}
+                  tickFormatter={(v: number) => (peak < 2 ? v.toFixed(1) : Math.round(v).toString())}
+                />
                 <Tooltip
                   contentStyle={{ background: "var(--card)", border: "1px solid var(--brd)", borderRadius: 8, fontSize: 12 }}
                   formatter={(value) => [`${Number(value).toFixed(2)} tps`, "TPS"]}
                 />
-                <Area type="monotone" dataKey="tps" stroke="var(--gold)" strokeWidth={2} fill="url(#tps-grad)" />
+                <Area type="monotone" dataKey="tps" stroke="var(--gold)" strokeWidth={2} fill="url(#tps-grad)" activeDot={{ r: 4, fill: "var(--gold)", stroke: "var(--bk)", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

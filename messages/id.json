@@ -152,7 +152,9 @@
     "supply": "Pasokan",
     "holders": "Pemegang",
     "transfers": "Transfer",
-    "no_tokens": "Belum ada token SRC-20 yang disebar."
+    "no_tokens": "Belum ada token SRC-20 yang disebar.",
+    "empty_title": "Belum ada token SRC-20 yang disebar",
+    "empty_hint": "Token yang sudah dideploy akan muncul di sini beserta supply, jumlah pemegang, dan transfer terbaru. Deploy tokenmu pakai Sentrix SDK."
   },
   "token_detail": {
     "transfers": "Transfer",
