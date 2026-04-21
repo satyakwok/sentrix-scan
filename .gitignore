@@ -44,8 +44,17 @@ next-env.d.ts
 
 # local dev artifacts (playwright MCP / research notes / screenshots at repo root)
 .playwright-mcp/
-.claude/research/
 /*.png
+
+# Claude Code / Cursor / AI-assistant workspace files — never push these.
+# User-level skills live at ~/.claude/skills; this catches any project-scoped
+# equivalents + local settings + scratch research.
+.claude/
+.cursor/
+.aider*
+.continue/
+# (if you ever want to commit a specific file under .claude/, negate it
+#  explicitly like: !.claude/commands/public-command.md)
 
 # local-only planning + scratch notes (session-off convention, never push)
 /TODO.md
