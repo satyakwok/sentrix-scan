@@ -44,7 +44,12 @@ next-env.d.ts
 
 # local dev artifacts (playwright MCP / research notes / screenshots at repo root)
 .playwright-mcp/
+# audit screenshots dumped at repo root (any image format)
 /*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/*.gif
 
 # Claude Code / Cursor / AI-assistant workspace files — never push these.
 # User-level skills live at ~/.claude/skills; this catches any project-scoped
