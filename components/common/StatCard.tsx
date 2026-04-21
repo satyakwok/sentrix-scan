@@ -21,23 +21,47 @@ interface StatCardProps {
   spark?: number[];
 }
 
+// DECISION: Sparkline uses a Catmull-Rom-like smoothing so the line reads as a gentle curve
+// instead of a jagged polyline. Gradient fill + soft drop-shadow so it doesn't look dead.
 function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(1, ...data);
-  const min = Math.min(0, ...data);
+  const max = Math.max(...data);
+  const min = Math.min(...data);
   const range = max - min || 1;
   const W = 100;
-  const H = 24;
+  const H = 28;
+  const pad = 2;
+  const usableH = H - pad * 2;
   const step = W / Math.max(1, data.length - 1);
-  const path = data.map((v, i) => {
-    const x = i * step;
-    const y = H - ((v - min) / range) * H;
-    return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
-  }).join(" ");
+
+  const points = data.map((v, i) => ({
+    x: i * step,
+    y: pad + usableH - ((v - min) / range) * usableH,
+  }));
+
+  // Smooth curve: cardinal spline-ish — each segment uses a control point pulled toward the
+  // neighbor to round the corners without overshoot.
+  const path = points.reduce((acc, p, i, arr) => {
+    if (i === 0) return `M${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+    const prev = arr[i - 1];
+    const cx = (prev.x + p.x) / 2;
+    return `${acc} Q${cx.toFixed(2)},${prev.y.toFixed(2)} ${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+  }, "");
+
   const fill = `${path} L ${W},${H} L 0,${H} Z`;
+  const last = points[points.length - 1];
+  const gradId = `spark-${color.replace(/[^a-z0-9]/gi, "")}`;
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-6 overflow-visible" preserveAspectRatio="none" aria-hidden="true">
-      <path d={fill} fill={color} opacity="0.12" />
-      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-7 overflow-visible" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={fill} fill={`url(#${gradId})`} />
+      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+      {last && <circle cx={last.x} cy={last.y} r="2" fill={color} opacity="0.95" />}
     </svg>
   );
 }
