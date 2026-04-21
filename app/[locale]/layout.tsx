@@ -8,6 +8,7 @@ import { Header, MobileBottomNav } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/layout/toaster";
 import { routing } from "@/i18n/routing";
+import { getApiUrl } from "@/lib/chain";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -27,6 +28,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href={getApiUrl("mainnet")} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={getApiUrl("testnet")} />
+      </head>
       <body className="antialiased min-h-screen flex flex-col">
         <NextIntlClientProvider>
           <ThemeProvider>

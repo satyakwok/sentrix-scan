@@ -27,11 +27,11 @@ export function Footer() {
           <div className="space-y-3">
             <h3 className="font-mono text-[10px] tracking-[.22em] uppercase text-[var(--tx-d)]">Explorer</h3>
             <nav className="flex flex-col gap-2 text-[12px]">
-              <Link href="/" className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Home</Link>
-              <Link href="/blocks" className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Blocks</Link>
-              <Link href="/validators" className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Validators</Link>
-              <Link href="/tokens" className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Tokens</Link>
-              <Link href="/leaderboard/account/holders" className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Leaderboard</Link>
+              <Link href="/" prefetch={false} className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Home</Link>
+              <Link href="/blocks" prefetch={false} className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Blocks</Link>
+              <Link href="/validators" prefetch={false} className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Validators</Link>
+              <Link href="/tokens" prefetch={false} className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Tokens</Link>
+              <Link href="/leaderboard/account/holders" prefetch={false} className="text-[var(--tx-m)] hover:text-[var(--gold)] transition-colors">Leaderboard</Link>
             </nav>
           </div>
 

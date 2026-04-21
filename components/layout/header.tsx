@@ -185,6 +185,7 @@ export function Header() {
               <Link
                 key={l.href}
                 href={l.href}
+                prefetch={false}
                 className={`px-3 py-1.5 text-[11px] font-light tracking-[.1em] uppercase transition-all duration-200 rounded-full border ${
                   active
                     ? "text-[var(--gold)] bg-[color-mix(in_oklab,var(--gold)_6%,transparent)] border-[color-mix(in_oklab,var(--gold)_15%,transparent)]"
@@ -357,6 +358,7 @@ export function Header() {
               <Link
                 key={l.href}
                 href={l.href}
+                prefetch={false}
                 onClick={() => setMobileOpen(false)}
                 className="py-3 text-[12px] tracking-[.1em] uppercase text-[var(--tx-m)] border-b border-[var(--brd)] hover:text-[var(--gold)]"
               >
@@ -452,6 +454,7 @@ export function MobileBottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] tracking-[.1em] uppercase transition-colors ${
                 active ? "text-[var(--gold)]" : "text-[var(--tx-d)] hover:text-[var(--tx-m)]"
               }`}
