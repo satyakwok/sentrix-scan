@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Address } from "@/components/common/Address";
 import { EmptyState } from "@/components/common/EmptyState";
+import { RankBadge } from "@/components/common/RankBadge";
 import { useNetwork } from "@/lib/network-context";
 import { useRichlist, useValidators } from "@/lib/hooks";
 import { formatNumber } from "@/lib/format";
@@ -80,11 +81,7 @@ export default function WhaleTopWalletsPage() {
                   const name = nameByAddress[w.address.toLowerCase()];
                   return (
                     <tr key={w.address}>
-                      <td className="px-4 py-2.5">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold bg-muted text-muted-foreground">
-                          {w.rank}
-                        </span>
-                      </td>
+                      <td className="px-4 py-2.5"><RankBadge rank={w.rank} /></td>
                       <td className="px-4 py-2.5">
                         <div className="flex flex-col gap-0.5">
                           {name && <span className="font-medium text-sm">{name}</span>}

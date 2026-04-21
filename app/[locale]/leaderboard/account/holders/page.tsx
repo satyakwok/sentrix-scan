@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Address } from "@/components/common/Address";
 import { Pagination } from "@/components/common/Pagination";
+import { RankBadge } from "@/components/common/RankBadge";
 import { useNetwork } from "@/lib/network-context";
 import { useRichlist, useValidators } from "@/lib/hooks";
 import { formatNumber } from "@/lib/format";
@@ -85,16 +86,7 @@ export default function TopHoldersPage() {
                     const name = nameByAddress[r.address.toLowerCase()];
                     return (
                       <tr key={r.address}>
-                        <td className="px-4 py-2.5">
-                          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold ${
-                            r.rank === 1 ? "bg-amber-500/15 text-amber-500"
-                            : r.rank === 2 ? "bg-gray-400/15 text-gray-400"
-                            : r.rank === 3 ? "bg-orange-600/15 text-orange-500"
-                            : "bg-muted text-muted-foreground"
-                          }`}>
-                            {r.rank}
-                          </span>
-                        </td>
+                        <td className="px-4 py-2.5"><RankBadge rank={r.rank} /></td>
                         <td className="px-4 py-2.5">
                           <div className="flex flex-col gap-0.5">
                             {name && <span className="font-medium text-sm">{name}</span>}

@@ -85,7 +85,22 @@ export default function BlocksPage() {
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">
                           <Timestamp timestamp={block.timestamp} />
                         </td>
-                        <td className="px-4 py-2.5 text-center">{block.tx_count ?? block.transactions?.length ?? 0}</td>
+                        <td className="px-4 py-2.5 text-center">
+                          {(() => {
+                            const n = block.tx_count ?? block.transactions?.length ?? 0;
+                            return (
+                              <span className={`inline-flex items-center justify-center min-w-7 h-6 px-2 rounded-md text-[11px] font-mono tabular-nums ${
+                                n === 0
+                                  ? "text-[var(--tx-d)]"
+                                  : n === 1
+                                    ? "bg-[var(--gold)]/10 text-[var(--gold)] border border-[var(--gold)]/20"
+                                    : "bg-[var(--green)]/10 text-[var(--green)] border border-[var(--green)]/20"
+                              }`}>
+                                {n}
+                              </span>
+                            );
+                          })()}
+                        </td>
                         <td className="px-4 py-2.5 hidden md:table-cell">
                           <span className="inline-flex items-center gap-1">
                             <span className="font-mono text-xs text-muted-foreground">{shortenHash(block.hash)}</span>
