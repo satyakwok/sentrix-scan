@@ -155,16 +155,25 @@ export default function BlockDetailPage({ params }: { params: Promise<{ height: 
             </CardContent>
           </Card>
 
-          {/* Consensus — nonce + difficulty, the PoW signals */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="eyebrow">Consensus</CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 py-0">
-              <InfoRow label="Nonce" value={<span className="font-mono">{block.nonce}</span>} />
-              <InfoRow label="Difficulty" value={<span className="font-mono">{block.difficulty}</span>} last />
-            </CardContent>
-          </Card>
+          {/* Consensus — only render on PoW chains that actually populate nonce/difficulty.
+              Sentrix is PoA so the backend omits both; hide the whole card instead of
+              rendering two empty rows. */}
+          {(block.nonce != null && String(block.nonce) !== "" && block.nonce !== 0) ||
+           (block.difficulty != null && String(block.difficulty) !== "" && block.difficulty !== 0) ? (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="eyebrow">Consensus</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 py-0">
+                {block.nonce != null && String(block.nonce) !== "" && (
+                  <InfoRow label="Nonce" value={<span className="font-mono">{block.nonce}</span>} last={block.difficulty == null} />
+                )}
+                {block.difficulty != null && String(block.difficulty) !== "" && (
+                  <InfoRow label="Difficulty" value={<span className="font-mono">{block.difficulty}</span>} last />
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
         </TabsContent>
 
         <TabsContent value="transactions">

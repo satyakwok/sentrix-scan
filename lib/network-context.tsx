@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 import type { NetworkId } from "./chain";
 
@@ -16,12 +16,18 @@ const NetworkContext = createContext<NetworkContextValue>({
   toggle: () => {},
 });
 
-// DECISION: network switch fires a sonner toast and persists to localStorage.
-// The initial state is read lazily from localStorage (SSR-safe guard).
+// DECISION: always start at "mainnet" for the first paint so SSR ↔ CSR agree; hydrate the
+// localStorage value in a useEffect AFTER mount. Reading localStorage in useState initializer
+// produced different initial state on server (always mainnet) vs client (could be testnet)
+// → React error #418 "hydration failed" on every page load for users with testnet preference.
 export function NetworkProvider({ children }: { children: ReactNode }) {
-  const [network, setNetwork] = useState<NetworkId>(
-    () => (typeof window !== "undefined" && (localStorage.getItem("sentrix-network") as NetworkId)) || "mainnet",
-  );
+  const [network, setNetwork] = useState<NetworkId>("mainnet");
+
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" ? localStorage.getItem("sentrix-network") : null) as NetworkId | null;
+    if (stored && stored !== network) setNetwork(stored);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSet = useCallback((n: NetworkId) => {
     setNetwork(n);

@@ -107,33 +107,56 @@ export default function ValidatorDetailPage({ params }: { params: Promise<{ addr
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard
-          label="Stake"
-          value={validator.stake !== undefined ? `${formatNumber(validator.stake)} SRX` : "—"}
-          accent="var(--gold)"
-        />
-        <StatCard
-          label="Commission"
-          value={validator.commission !== undefined ? `${validator.commission}%` : "—"}
-          accent="var(--cyan)"
-        />
-        <StatCard
-          label="Uptime"
-          value={validator.uptime !== undefined ? `${validator.uptime.toFixed(1)}%` : "—"}
-          accent={
-            validator.uptime === undefined ? "var(--tx-d)" :
-            validator.uptime >= 99 ? "var(--green)" :
-            validator.uptime >= 95 ? "var(--orange)" :
-            "var(--red)"
-          }
-        />
-        <StatCard
-          label="Blocks Produced"
-          value={validator.blocks_produced !== undefined ? formatNumber(validator.blocks_produced) : "—"}
-          accent="var(--purple)"
-        />
-      </div>
+      {/* Stats — on PoA, only Blocks Produced is populated. Render a single hero card in that
+          case instead of 4 cards full of em-dashes. Post-Voyager DPoS will re-fill the grid. */}
+      {validator.stake !== undefined || validator.commission !== undefined || validator.uptime !== undefined ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatCard
+            label="Stake"
+            value={validator.stake !== undefined ? `${formatNumber(validator.stake)} SRX` : "—"}
+            accent="var(--gold)"
+          />
+          <StatCard
+            label="Commission"
+            value={validator.commission !== undefined ? `${validator.commission}%` : "—"}
+            accent="var(--cyan)"
+          />
+          <StatCard
+            label="Uptime"
+            value={validator.uptime !== undefined ? `${validator.uptime.toFixed(1)}%` : "—"}
+            accent={
+              validator.uptime === undefined ? "var(--tx-d)" :
+              validator.uptime >= 99 ? "var(--green)" :
+              validator.uptime >= 95 ? "var(--orange)" :
+              "var(--red)"
+            }
+          />
+          <StatCard
+            label="Blocks Produced"
+            value={validator.blocks_produced !== undefined ? formatNumber(validator.blocks_produced) : "—"}
+            accent="var(--purple)"
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <StatCard
+            label="Blocks Produced"
+            value={validator.blocks_produced !== undefined ? formatNumber(validator.blocks_produced) : "—"}
+            accent="var(--purple)"
+          />
+          <StatCard
+            label="Consensus"
+            value="PoA"
+            accent="var(--gold)"
+            title="Proof of Authority — stake/commission/uptime are DPoS-only fields."
+          />
+          <StatCard
+            label="Status"
+            value={validator.is_active === false ? "Inactive" : "Active"}
+            accent={validator.is_active === false ? "var(--red)" : "var(--green)"}
+          />
+        </div>
+      )}
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>

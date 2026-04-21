@@ -18,6 +18,7 @@ import { useNetwork } from "@/lib/network-context";
 import { useAddress, useAddressHistory, useAccountTokens, useEventLogs } from "@/lib/hooks";
 import { formatSRX, formatNumber } from "@/lib/format";
 import { Link } from "@/i18n/navigation";
+import { useAddressLabel, toneForKind } from "@/lib/labels";
 
 type DirFilter = "all" | "in" | "out";
 
@@ -30,6 +31,7 @@ export default function AddressDetailPage({ params }: { params: Promise<{ addr: 
   const { data: history, loading: historyLoading } = useAddressHistory(network, addr, page);
   const { data: tokens, loading: tokensLoading } = useAccountTokens(network, addr);
   const { data: eventLogs, loading: eventLogsLoading } = useEventLogs(network, addr);
+  const label = useAddressLabel(addr);
 
   const filtered = (history ?? []).filter((tx) => {
     if (dirFilter === "all") return true;
@@ -39,7 +41,19 @@ export default function AddressDetailPage({ params }: { params: Promise<{ addr: 
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
-      <PageHeader icon={Wallet} eyebrow="Address" title="Account" />
+      <PageHeader
+        icon={Wallet}
+        eyebrow="Address"
+        title={label?.name ?? "Account"}
+        actions={label ? (() => {
+          const tone = toneForKind(label.kind);
+          return (
+            <span className={`inline-flex items-center text-[10px] font-mono uppercase tracking-[.12em] rounded-md px-2 py-1 border ${tone.bg} ${tone.fg} ${tone.border}`}>
+              {label.kind}
+            </span>
+          );
+        })() : undefined}
+      />
 
       {/* Address bar */}
       <div className="flex items-center gap-2 bg-muted/40 rounded-lg p-3 border border-border/60">
