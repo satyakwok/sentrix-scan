@@ -16,22 +16,43 @@ const NetworkContext = createContext<NetworkContextValue>({
   toggle: () => {},
 });
 
-// DECISION: always start at "mainnet" for the first paint so SSR ↔ CSR agree; hydrate the
-// localStorage value in a useEffect AFTER mount. Reading localStorage in useState initializer
-// produced different initial state on server (always mainnet) vs client (could be testnet)
-// → React error #418 "hydration failed" on every page load for users with testnet preference.
-export function NetworkProvider({ children }: { children: ReactNode }) {
-  const [network, setNetwork] = useState<NetworkId>("mainnet");
+const COOKIE_NAME = "sentrix-network";
+const ONE_YEAR = 60 * 60 * 24 * 365;
+
+function writeCookie(value: NetworkId) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
+}
+
+// DECISION: network preference lives in a cookie so the server layout can read it via
+// next/headers and pass `initial` here. Eliminates the prior "render mainnet → useEffect →
+// setNetwork(testnet) → re-fetch" double-fetch + visual flash for testnet users.
+// Legacy localStorage values from earlier builds are migrated on mount.
+export function NetworkProvider({
+  initial = "mainnet",
+  children,
+}: {
+  initial?: NetworkId;
+  children: ReactNode;
+}) {
+  const [network, setNetworkState] = useState<NetworkId>(initial);
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" ? localStorage.getItem("sentrix-network") : null) as NetworkId | null;
-    if (stored && stored !== network) setNetwork(stored);
+    if (typeof window === "undefined") return;
+    const legacy = localStorage.getItem(COOKIE_NAME);
+    if (legacy === "mainnet" || legacy === "testnet") {
+      writeCookie(legacy);
+      localStorage.removeItem(COOKIE_NAME);
+      if (legacy !== network) setNetworkState(legacy);
+    } else {
+      writeCookie(network);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSet = useCallback((n: NetworkId) => {
-    setNetwork(n);
-    if (typeof window !== "undefined") localStorage.setItem("sentrix-network", n);
+    setNetworkState(n);
+    writeCookie(n);
     toast.success(`Switched to ${n === "mainnet" ? "Mainnet (Chain ID 7119)" : "Testnet (Chain ID 7120)"}`);
   }, []);
 
