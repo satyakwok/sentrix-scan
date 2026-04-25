@@ -33,7 +33,7 @@ export function TxHash({
   );
 
   const content = link ? (
-    <Link href={`/tx/${hash}`} title={hash} className={linkClasses}>
+    <Link href={`/tx/${hash}`} prefetch={false} title={hash} className={linkClasses}>
       {display}
     </Link>
   ) : (

@@ -18,6 +18,7 @@ export function SubTabs({ tabs }: { tabs: SubTab[] }) {
           <Link
             key={t.href}
             href={t.href}
+            prefetch={false}
             className={cn(
               "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
               active

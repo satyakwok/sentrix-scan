@@ -37,7 +37,7 @@ export function AnalyticsCharts({ perf, daily }: Props) {
           {tpsSeries.length === 0 ? (
             <EmptyChart text="No throughput data in the selected window." />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={240} minWidth={0}>
               <AreaChart data={tpsSeries} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
                 <defs>
                   <linearGradient id="a-tps" x1="0" y1="0" x2="0" y2="1">
@@ -83,7 +83,7 @@ export function AnalyticsCharts({ perf, daily }: Props) {
           {tpsSeries.length === 0 ? (
             <EmptyChart text="No block time data available." />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={240} minWidth={0}>
               <AreaChart data={tpsSeries} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
                 <defs>
                   <linearGradient id="a-bt" x1="0" y1="0" x2="0" y2="1">
@@ -131,7 +131,7 @@ export function AnalyticsCharts({ perf, daily }: Props) {
           ) : !hasMultiDayData ? (
             <EmptyChart text="Historical daily aggregates pending — only today's bucket is populated on the backend right now." />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={272} minWidth={0}>
               <BarChart data={dailySeries} margin={{ top: 12, right: 12, left: 0, bottom: 4 }} barGap={4}>
                 <defs>
                   <linearGradient id="a-bar-blocks" x1="0" y1="0" x2="0" y2="1">

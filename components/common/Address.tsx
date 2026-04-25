@@ -71,6 +71,7 @@ export function Address({
     <Link
       ref={ref as never}
       href={`/address/${address}`}
+      prefetch={false}
       data-address={address}
       title={address}
       className={linkClasses}

@@ -35,7 +35,7 @@ export function BlockHeight({
   }
 
   return (
-    <Link href={`/blocks/${height}`} className={classes}>
+    <Link href={`/blocks/${height}`} prefetch={false} className={classes}>
       {display}
     </Link>
   );

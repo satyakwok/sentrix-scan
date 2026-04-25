@@ -27,6 +27,7 @@ export function CategoryNav() {
           <Link
             key={base}
             href={base}
+            prefetch={false}
             className={cn(
               "inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors group shrink-0 lg:w-full",
               active

@@ -93,7 +93,7 @@ export function StatsChart({ performance, range, onRangeChange, loading }: {
           </div>
         ) : (
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={192} minWidth={0}>
               <AreaChart data={data} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
                 <defs>
                   <linearGradient id="tps-grad" x1="0" y1="0" x2="0" y2="1">
