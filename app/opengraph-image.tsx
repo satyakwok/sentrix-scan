@@ -45,7 +45,7 @@ export default function OGImage() {
           Block Explorer for Sentrix Chain (SRX)
         </div>
         <div style={{ fontSize: 20, color: "#64748B", marginTop: 40, fontFamily: "monospace" }}>
-          Chain ID 7119 · Mainnet
+          Layer 1 EVM · 500ms blocks · SRX
         </div>
       </div>
     ),

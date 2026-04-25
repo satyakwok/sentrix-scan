@@ -84,9 +84,10 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [perfRange, setPerfRange] = useState<"1m" | "5m" | "15m" | "1h" | "24h">("1h");
   const { data: stats, loading: statsLoading } = useStats(network);
-  // DECISION: TPS chart + Latest Blocks both consume this window. 500 is enough to fill the
-  // 1m/5m/15m buckets at 0.5s block time; Latest Blocks only shows the top 10 of the list.
-  const { data: blocks, loading: blocksLoading } = useBlocks(network, 500);
+  // DECISION: only the top 10 blocks are rendered (Latest Blocks card + block-time fallback +
+  // idle detection). Client-side TPS bucketing was replaced by /chain/performance, so pulling
+  // 500 blocks every 10s was dead weight — ~35 KB/poll → ~4 KB/poll.
+  const { data: blocks, loading: blocksLoading } = useBlocks(network, 10);
   const { data: txs, loading: txsLoading } = useTransactions(network, 10);
   // DECISION: backend /chain/performance now feeds both the Live TPS card and the StatsChart.
   // Replaces the previous client-bucketed estimate — real tps/block_time from the validator.

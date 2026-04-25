@@ -80,11 +80,11 @@ function usePolling<T>(
     setData(null);
     setStatus(FetchStatus.Fetching);
     failures.current = 0;
-    // DECISION: stagger initial fetches with a small random jitter (0-400ms). Home mounts
-    // ~10 polling hooks at once; without jitter they all hit the backend within <50ms and
-    // blow past the rate limit. Jitter spreads the burst across 400ms so each request falls
-    // inside its own rate bucket — no more 429/CORS flash on page load.
-    const initialJitter = Math.floor(Math.random() * 400);
+    // DECISION: small 0-80ms jitter on initial fetch. Enough to desync mount bursts across
+    // ~10 hooks (avoids identical request timestamps) without visibly delaying first paint.
+    // Prior value of 0-400ms was insurance for the backend rate-limit flood; that flood was
+    // resolved server-side and the initial burst now fits well under the 60 req/min cap.
+    const initialJitter = Math.floor(Math.random() * 80);
     const jitterTimer = setTimeout(() => { refetch(); }, initialJitter);
     if (interval > 0) {
       function schedule() {
