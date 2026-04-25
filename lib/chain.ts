@@ -24,7 +24,7 @@ export const sentrixTestnet = defineChain({
     },
   },
   blockExplorers: {
-    default: { name: "Sentrix Scan Testnet", url: "https://testnet-scan.sentriscloud.com" },
+    default: { name: "Sentrix Scan Testnet", url: "https://testnet-rpc.sentriscloud.com/explorer" },
   },
   testnet: true,
 });

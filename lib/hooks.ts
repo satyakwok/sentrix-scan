@@ -86,22 +86,38 @@ function usePolling<T>(
     // resolved server-side and the initial burst now fits well under the 60 req/min cap.
     const initialJitter = Math.floor(Math.random() * 80);
     const jitterTimer = setTimeout(() => { refetch(); }, initialJitter);
-    if (interval > 0) {
-      function schedule() {
-        const backoff = Math.min(60_000, interval * Math.pow(2, failures.current));
-        timerRef.current = setTimeout(async () => {
-          await refetch();
-          schedule();
-        }, backoff);
-      }
-      schedule();
-      return () => {
-        clearTimeout(jitterTimer);
-        if (timerRef.current) clearTimeout(timerRef.current);
-      };
+
+    function reschedule() {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (interval <= 0) return;
+      const backoff = Math.min(60_000, interval * Math.pow(2, failures.current));
+      timerRef.current = setTimeout(async () => {
+        await refetch();
+        reschedule();
+      }, backoff);
     }
+    reschedule();
+
+    // DECISION: Chrome aggressively throttles setTimeout in hidden tabs (down to ~1 fire/min).
+    // After switching back, the next poll can be many seconds behind. On visibility change to
+    // "visible", refetch immediately and reset the schedule so the user sees fresh data without
+    // having to hit reload — was a real symptom (UI "frozen" until refresh).
+    function onVisibility() {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        refetch();
+        reschedule();
+      }
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibility);
+    }
+
     return () => {
       clearTimeout(jitterTimer);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
     };
   }, [refetch, interval]);
 
