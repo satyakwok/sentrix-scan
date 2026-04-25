@@ -23,7 +23,7 @@ export default function GlobalError({
           minHeight: "100vh",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0A0E1A",
+          background: "#0A0A0C",
           color: "#fff",
           fontFamily: "system-ui, -apple-system, sans-serif",
           padding: "2rem",
@@ -38,7 +38,7 @@ export default function GlobalError({
             onClick={() => window.location.reload()}
             style={{
               padding: "10px 20px",
-              background: "#3B82F6",
+              background: "#8A5A11",
               border: "none",
               borderRadius: 8,
               color: "#fff",
