@@ -144,28 +144,26 @@ export function HomeContent({ initial }: { initial: HomeBundle }) {
           </div>
         </div>
       )}
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-16 space-y-12 animate-fade-in">
-      {/* Editorial hero */}
-      <div className="text-center space-y-6 max-w-3xl mx-auto">
-        <div className="flex items-center justify-center gap-3 anim-hero-1 opacity-0">
-          <span className="w-8 h-px bg-[var(--gold)]" />
-          <span className={`w-1.5 h-1.5 rounded-full ${network === "mainnet" ? "bg-[var(--green)]" : "bg-[var(--orange)]"} animate-pulse-live`} />
-          <span className="w-8 h-px bg-[var(--gold)]" />
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-10 space-y-10 animate-fade-in">
+      {/* Title rail — flush-left wordmark + status eyebrow on the left, search rail on the
+          right. Per sentris-design: explorer is dense, not sparse — the prior centered
+          72px hero pushed live data below the fold and read as a marketing site instead of
+          a tool. Editorial Playfair voice retained at a tool-appropriate scale. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-6 lg:gap-12 items-end">
+        <div className="anim-hero-1 opacity-0 space-y-2.5 min-w-0">
+          <div className="flex items-center gap-2.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${network === "mainnet" ? "bg-[var(--green)]" : "bg-[var(--orange)]"} animate-pulse-live`} />
+            <span className="eyebrow">
+              {network === "mainnet" ? "Mainnet" : "Testnet"} · Chain ID {network === "mainnet" ? "7119" : "7120"}
+            </span>
+          </div>
+          <h1 className="font-serif text-[clamp(32px,4.2vw,52px)] font-light leading-[.92] tracking-[.04em] text-[var(--gold)]">
+            {t("title_prefix").toUpperCase()}
+            <span className="text-[var(--gold-l)] font-normal"> {t("title_suffix").toUpperCase()}</span>
+          </h1>
         </div>
 
-        <h1 className="font-serif text-[clamp(38px,6vw,72px)] font-light leading-[.95] tracking-[.08em] text-[var(--gold)] pr-[.08em] anim-hero-2 opacity-0">
-          {t("title_prefix").toUpperCase()}
-          <span className="text-[var(--gold-l)] font-normal"> {t("title_suffix").toUpperCase()}</span>
-        </h1>
-
-        <p className="text-[13px] md:text-[14px] text-[var(--tx-m)] font-light tracking-[.02em] leading-relaxed max-w-xl mx-auto anim-hero-3 opacity-0">
-          {t("description")}{" "}
-          <span className="font-mono text-[11px] tracking-[.1em] text-[var(--tx-d)] ml-1">
-            · Chain ID {network === "mainnet" ? "7119" : "7120"} ·
-          </span>
-        </p>
-
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto pt-4 anim-hero-4 opacity-0">
+        <form onSubmit={handleSearch} className="anim-hero-2 opacity-0 w-full lg:ml-auto lg:max-w-xl">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--tx-d)]" />
             <input
